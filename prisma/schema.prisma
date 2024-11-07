@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OptionType {
+  TEAM
+  PLAYER
+}
+
+model users {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  // role      Role     @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model ParentForm {
+  id        Int         @id @default(autoincrement())
+  name      String
+  prefix    String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  ChildForm ChildForm[]
+}
+
+model ChildForm {
+  id            Int            @id @default(autoincrement())
+  name          String
+  prefix        String
+  isChild       Boolean
+  childParentId Int?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  parentId      Int?
+  parent        ParentForm?    @relation(fields: [parentId], references: [id])
+  FormTemplate  FormTemplate[]
+}
+
+model FormTemplate {
+  id             Int              @id @default(autoincrement())
+  name           String
+  childFormId    Int
+  childForm      ChildForm?       @relation(fields: [childFormId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  TemplateSchema TemplateSchema[]
+}
+
+model TemplateSchema {
+  id         Int           @id @default(autoincrement())
+  name       String
+  templateId Int
+  template   FormTemplate? @relation(fields: [templateId], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  deletedAt  DateTime?
+  sentences  Sentences[]
+}
+
+model Sentences {
+  id             Int              @id @default(autoincrement())
+  sentence       String
+  options        Json             @db.JsonB
+  order          Int
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+  templateSchema TemplateSchema[]
+}
+
+// model options {
+//   optionId   Int        @id @default(autoincrement())
+//   name       String
+//   isParent   Boolean
+//   parentId   Int?
+//   parent     options?   @relation("parents", fields: [parentId], references: [optionId])
+//   type       OptionType @default(PLAYER)
+//   createdAt  DateTime   @default(now())
+//   updatedAt  DateTime   @updatedAt
+//   deletedAt  DateTime?
+//   options    options[]  @relation("parents")
+//   questionId Int?
+//   questions  questions? @relation(fields: [questionId], references: [questionId])
+// }
+
+// model questions {
+//   questionId  Int        @id @default(autoincrement())
+//   name        String
+//   description String
+//   type        OptionType @default(TEAM)
+//   options     options[]
+//   answer      String
+//   matchId     Int
+//   match       match      @relation(fields: [matchId], references: [matchId])
+//   createdAt   DateTime   @default(now())
+//   updatedAt   DateTime   @updatedAt
+//   deletedAt   DateTime?
+//   userData    userData[]
+// }
+
+// model match {
+//   matchId   Int         @id @default(autoincrement())
+//   name      String
+//   startAt   DateTime
+//   endAt     DateTime
+//   createdAt DateTime    @default(now())
+//   updatedAt DateTime    @updatedAt
+//   deletedAt DateTime?
+//   questions questions[]
+// }
+
+// model userData {
+//   userDataId String    @id @default(uuid())
+//   questionId Int
+//   question   questions @relation(fields: [questionId], references: [questionId])
+//   answer     String
+//   createdAt  DateTime  @default(now())
+//   updatedAt  DateTime  @updatedAt
+//   deletedAt  DateTime?
+// }
