@@ -1,3 +1,10 @@
+export interface QueryObjectProps {
+  take?: string;
+  skip?: string;
+  orderBy?: "asc" | "desc";
+  search?: string;
+}
+
 export interface ISuccessResponse {
   data: Record<any, any>;
   message: string;
@@ -8,7 +15,7 @@ export interface ISuccessResponse {
 export interface IQueryListing {
   page?: string;
   limit?: string;
-  orderBy?: string;
+  orderBy?: "asc" | "desc";
   direction?: "asc" | "desc";
   search?: string;
 }

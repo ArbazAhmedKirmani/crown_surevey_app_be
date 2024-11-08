@@ -7,7 +7,7 @@ export default function errorHandler(
   res: Response,
   next: NextFunction
 ): void {
-  // console.error("Error:", err);
+  console.error("Error:", err);
   let errorObject = {
     ok: false,
     status: "error",

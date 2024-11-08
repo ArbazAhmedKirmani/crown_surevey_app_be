@@ -8,7 +8,7 @@ const ProtectedRoutes = Router();
 ProtectedRoutes.use(authenticateToken);
 
 // Controllers
-ProtectedRoutes.use("form", FormController);
-ProtectedRoutes.use("schema", SchemaController);
+ProtectedRoutes.use("/form", FormController);
+ProtectedRoutes.use("/schema", SchemaController);
 
 export default ProtectedRoutes;

@@ -10,6 +10,7 @@ const schemaService = new SchemaService();
 SchemaController.get(
   "/",
   catchAsync(async (req: Request, res: IResponse) => {
+    debugger;
     const data = await schemaService.getAllSchema(req.query);
     res.sendSuccess(data, "success");
   })

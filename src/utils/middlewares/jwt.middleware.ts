@@ -15,17 +15,22 @@ const authenticateToken = async (
   res: Response,
   next: NextFunction
 ): Promise<Response<any, Record<string, any>> | undefined> => {
-  const token = req.header("Authorization");
+  try {
+    const token = req.header("Authorization")?.split(" ")?.[1];
 
-  if (!token) return res.status(401).json({ error: "Access denied." });
+    if (!token || token === "undefined")
+      return res.status(401).json({ error: "Access denied." });
 
-  const result = jwt.verify(token, AppConfig.JWT.SECRET_KEY!);
+    const result = jwt.verify(token, AppConfig.JWT.SECRET_KEY!);
 
-  if (!result) return res.status(403).json({ error: "Invalid token." });
+    if (!result) return res.status(403).json({ error: "Invalid token." });
 
-  req["user"] = result;
+    req["user"] = result;
 
-  next();
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Access denied. Token expired" });
+  }
 };
 
 export default authenticateToken;

@@ -6,11 +6,11 @@ export default class SchemaService {
   constructor() {}
 
   async getAllSchema(query: IQueryListing) {
-    const result = prisma.templateSchema.findMany({
+    const result = await prisma.templateSchema.findMany({
       where: {
         deletedAt: null,
       },
-      ...ListingQueryData(query),
+      // ...ListingQueryData(query),
     });
 
     return result;
