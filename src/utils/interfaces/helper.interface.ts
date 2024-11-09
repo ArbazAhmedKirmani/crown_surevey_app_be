@@ -1,6 +1,6 @@
 export interface QueryObjectProps {
-  take?: string;
-  skip?: string;
+  page?: string;
+  limit?: string;
   orderBy?: "asc" | "desc";
   search?: string;
 }
@@ -13,8 +13,8 @@ export interface ISuccessResponse {
 }
 
 export interface IQueryListing {
-  page?: string;
-  limit?: string;
+  page: string;
+  limit: string;
   orderBy?: "asc" | "desc";
   direction?: "asc" | "desc";
   search?: string;

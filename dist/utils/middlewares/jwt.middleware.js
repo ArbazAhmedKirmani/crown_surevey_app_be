@@ -15,13 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const app_config_1 = __importDefault(require("../config/app.config"));
 const authenticateToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.header("Authorization");
-    if (!token)
-        return res.status(401).json({ error: "Access denied." });
-    const result = yield jsonwebtoken_1.default.verify(token, app_config_1.default.JWT.SECRET_KEY);
-    if (!result)
-        return res.status(403).json({ error: "Invalid token." });
-    req["user"] = result;
-    next();
+    var _a, _b;
+    try {
+        const token = (_b = (_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.split(" ")) === null || _b === void 0 ? void 0 : _b[1];
+        if (!token || token === "undefined")
+            return res.status(401).json({ error: "Access denied." });
+        const result = jsonwebtoken_1.default.verify(token, app_config_1.default.JWT.SECRET_KEY);
+        if (!result)
+            return res.status(403).json({ error: "Invalid token." });
+        req["user"] = result;
+        next();
+    }
+    catch (error) {
+        return res.status(401).json({ error: "Access denied. Token expired" });
+    }
 });
 exports.default = authenticateToken;

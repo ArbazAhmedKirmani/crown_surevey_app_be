@@ -10,9 +10,14 @@ export default class SchemaService {
       where: {
         deletedAt: null,
       },
-      // ...ListingQueryData(query),
+      ...ListingQueryData(query),
     });
 
-    return result;
+    const count = await prisma.templateSchema.count({
+      where: {
+        deletedAt: null,
+      },
+    });
+    return { result, count };
   }
 }

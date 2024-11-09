@@ -7,9 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum OptionType {
-  TEAM
-  PLAYER
+enum SentenceType {
+  CHECKBOX
+  RADIO
+  TEXTAREA
+  INPUT
+  IMAGE
 }
 
 model users {
@@ -79,54 +82,3 @@ model Sentences {
   deletedAt      DateTime?
   templateSchema TemplateSchema[]
 }
-
-// model options {
-//   optionId   Int        @id @default(autoincrement())
-//   name       String
-//   isParent   Boolean
-//   parentId   Int?
-//   parent     options?   @relation("parents", fields: [parentId], references: [optionId])
-//   type       OptionType @default(PLAYER)
-//   createdAt  DateTime   @default(now())
-//   updatedAt  DateTime   @updatedAt
-//   deletedAt  DateTime?
-//   options    options[]  @relation("parents")
-//   questionId Int?
-//   questions  questions? @relation(fields: [questionId], references: [questionId])
-// }
-
-// model questions {
-//   questionId  Int        @id @default(autoincrement())
-//   name        String
-//   description String
-//   type        OptionType @default(TEAM)
-//   options     options[]
-//   answer      String
-//   matchId     Int
-//   match       match      @relation(fields: [matchId], references: [matchId])
-//   createdAt   DateTime   @default(now())
-//   updatedAt   DateTime   @updatedAt
-//   deletedAt   DateTime?
-//   userData    userData[]
-// }
-
-// model match {
-//   matchId   Int         @id @default(autoincrement())
-//   name      String
-//   startAt   DateTime
-//   endAt     DateTime
-//   createdAt DateTime    @default(now())
-//   updatedAt DateTime    @updatedAt
-//   deletedAt DateTime?
-//   questions questions[]
-// }
-
-// model userData {
-//   userDataId String    @id @default(uuid())
-//   questionId Int
-//   question   questions @relation(fields: [questionId], references: [questionId])
-//   answer     String
-//   createdAt  DateTime  @default(now())
-//   updatedAt  DateTime  @updatedAt
-//   deletedAt  DateTime?
-// }

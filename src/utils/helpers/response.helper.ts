@@ -20,7 +20,10 @@ export const ListingQueryData = (
         [query?.orderBy || "createdAt"]: query?.direction,
       },
     }),
-    ...(query?.page && { skip: parseInt(query?.page) }),
-    ...(query?.limit && { take: parseInt(query?.limit) }),
+    ...(query?.page &&
+      query?.limit && {
+        skip: (+query?.page - 1) * parseInt(query?.limit),
+        take: parseInt(query?.limit),
+      }),
   };
 };

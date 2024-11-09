@@ -5,8 +5,9 @@ import AppConfig from "../config/app.config";
 const saltRounds = 10;
 
 export const getQueryObject = (query: QueryObjectProps) => ({
-  take: Number(query?.take) || AppConfig.QUERY.TOP,
-  skip: Number(query?.skip) || AppConfig.QUERY.SKIP,
+  take: Number(query?.limit) || AppConfig.QUERY.TOP,
+  skip:
+    (Number(query?.page) - 1) * Number(query?.limit) || AppConfig.QUERY.SKIP,
 });
 
 export const hashPassword = async (
