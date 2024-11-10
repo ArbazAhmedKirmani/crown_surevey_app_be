@@ -16,4 +16,5 @@ const AppConfig = {
   },
 };
 
+Object.seal(AppConfig);
 export default AppConfig;
