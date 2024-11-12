@@ -8,7 +8,7 @@ import { responseEnhancer } from "./utils/middlewares/response-enhancer.middlewa
 import express from "express";
 import cors from "cors";
 import path from "path";
-
+import fileUpload from "express-fileupload";
 import fs from "fs";
 import { PDFDocument } from "pdf-lib";
 import {
@@ -16,6 +16,7 @@ import {
   getEmbeddedPngImage,
   replaceSelectedItem,
 } from "./utils/helpers/global.helper";
+
 const app: Application = express();
 const PORT = process.env.APP_PORT || 5000;
 
@@ -31,6 +32,11 @@ const corsOptions = {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
+app.use(
+  fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 },
+  })
+);
 
 app.use(express.static(path.join(__dirname, "./public")));
 app.use("docs", express.static(path.join(__dirname, "./docs")));
@@ -58,21 +64,14 @@ app.get("/generate-pdf", async (req, res) => {
     )
   );
 
-  // .png()
-  // .toBuffer();
-
   const surveyor_name = form.getTextField("Text2");
   const surveyor_ric_number = form.getTextField("Text3");
   const ground = form.getTextField("Text31");
   const local_environment = form.getTextField("Text34");
   const related_party_disclosure = form.getTextField("Text7");
-  // Fill the fields with data
   const sentence =
     "This is so much ['important', 'Superb', 'Fantastic', 'Negotiable'] and ['Critical', 'Urgent'] from our home Earth.";
   const arrays = extractArrays(sentence);
-  console.log("arrays: ", arrays);
-
-  // Example user selection
   const selectedItem = arrays.finalArrays.map((x) => ({
     identifier: x.identifier,
     value: x.array[0],

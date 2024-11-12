@@ -7,12 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum SentenceType {
+enum FormFieldType {
   CHECKBOX
   RADIO
   TEXTAREA
   INPUT
-  IMAGE
+  FILE
+  TABLE
+  SENTENCE
+  DATE
 }
 
 model users {
@@ -26,59 +29,59 @@ model users {
   deletedAt DateTime?
 }
 
-model ParentForm {
-  id        Int         @id @default(autoincrement())
-  name      String
-  prefix    String
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  deletedAt DateTime?
-  ChildForm ChildForm[]
-}
-
-model ChildForm {
-  id            Int            @id @default(autoincrement())
-  name          String
-  prefix        String
-  isChild       Boolean
-  childParentId Int?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-  parentId      Int?
-  parent        ParentForm?    @relation(fields: [parentId], references: [id])
-  FormTemplate  FormTemplate[]
-}
-
-model FormTemplate {
-  id             Int              @id @default(autoincrement())
-  name           String
-  childFormId    Int
-  childForm      ChildForm?       @relation(fields: [childFormId], references: [id])
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  deletedAt      DateTime?
-  TemplateSchema TemplateSchema[]
-}
-
-model TemplateSchema {
-  id         Int           @id @default(autoincrement())
-  name       String
-  templateId Int
-  template   FormTemplate? @relation(fields: [templateId], references: [id])
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+model Form {
+  id         Int         @id @default(autoincrement())
+  name       String      @db.VarChar(40)
+  prefix     String      @db.VarChar(10)
+  desc       String      @db.Text
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   deletedAt  DateTime?
-  sentences  Sentences[]
+  documentId String
+  document   Attachments @relation(fields: [documentId], references: [id])
+  FormField  FormField[]
 }
 
-model Sentences {
-  id             Int              @id @default(autoincrement())
-  sentence       String
-  options        Json             @db.JsonB
-  order          Int
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  deletedAt      DateTime?
-  templateSchema TemplateSchema[]
+model FormField {
+  id               String            @id @default(uuid())
+  name             String
+  mapperName       String?
+  orderNumber      Int
+  type             FormFieldType
+  hasAttachment    Boolean
+  required         Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+  formId           Int
+  form             Form              @relation(fields: [formId], references: [id])
+  formFieldId      String?
+  FormField        FormField?        @relation("form-field", fields: [formFieldId], references: [id])
+  attachmentFields FormField[]       @relation("form-field")
+  FormFieldSchema  FormFieldSchema[] @relation("form-field-schema")
+}
+
+model FormFieldSchema {
+  id            String    @id @default(uuid())
+  label_content String
+  type          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  formFieldId   String
+  formField     FormField @relation("form-field-schema", fields: [formFieldId], references: [id])
+}
+
+model Attachments {
+  id           String    @id @default(uuid())
+  name         String
+  originalName String
+  path         String
+  url          String
+  mimeType     String
+  size         Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  Form         Form[]
 }
