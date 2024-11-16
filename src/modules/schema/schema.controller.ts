@@ -11,16 +11,19 @@ const schemaService = new SchemaService();
 SchemaController.get(
   "/",
   catchAsync(
-    async (req: Request<any, any, any, IQueryListing>, res: IResponse) => {
-      // const data = await schemaService.getAllSchema(req.query);
-      // res.sendPaginatedSuccess(
-      //   data.result,
-      //   data.count,
-      //   +req.query?.limit,
-      //   +req.query?.page,
-      //   "success"
-      // );
-    }
+    catchAsync(
+      async (req: Request<any, any, any, IQueryListing>, res: IResponse) => {
+        // const data = await schemaService.getAllSchema(req.query);
+        // res.sendPaginatedSuccess(
+        //   data.result,
+        //   data.count,
+        //   +req.query?.limit,
+        //   +req.query?.page,
+        //   "success"
+        // );
+        res.sendSuccess([]);
+      }
+    )
   )
 );
 

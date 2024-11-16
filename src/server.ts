@@ -16,6 +16,9 @@ import {
   getEmbeddedPngImage,
   replaceSelectedItem,
 } from "./utils/helpers/global.helper";
+import Docxtemplater from "docxtemplater";
+import PizZip from "pizzip";
+import { title } from "process";
 
 const app: Application = express();
 const PORT = process.env.APP_PORT || 5000;
@@ -92,6 +95,61 @@ app.get("/generate-pdf", async (req, res) => {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", 'inline; filename="rhs_level_two.pdf"');
   res.send(Buffer.from(pdfBytes));
+});
+
+app.get("/generate-word", async (req, res) => {
+  const docxTemplate = fs.readFileSync(
+    path.join(__dirname, "./docs/Hello.docx"),
+    "binary"
+  );
+
+  // Load the DOCX file into Pizzip
+  const zip = new PizZip(docxTemplate);
+  const documentXml = zip.file("word/document.xml")?.asText();
+  // Create an instance of Docxtemplater with the loaded DOCX template
+  console.log(documentXml);
+
+  const doc = new Docxtemplater(zip);
+
+  // Set dummy data (we'll use placeholders to extract keys)
+  const replaceCheckbox = (isChecked: boolean) => {
+    return isChecked ? "☒" : "☐"; // Checked or unchecked box
+  };
+  doc.setData({
+    name: "John Doe 3",
+    year: "30",
+    agree: "abcdefgh",
+    male: true, // For checkbox field "male"
+    female: true, // For checkbox field "female"
+  });
+
+  //   {
+  //   title: "dummy value", // Add dummy data for all placeholders
+  //   date: "dummy value",
+  //   // table: [
+  //   //   { field1: "dummy value", field2: "2 dummy" },
+  //   //   { field1: "dummy value", field2: "2 dummy" },
+  //   // ], // Add more fields if needed
+  // });
+
+  try {
+    doc.render();
+  } catch (error) {
+    console.error("Error rendering template:", error);
+  }
+
+  // After rendering, we can inspect the template's data
+  // const placeholders = Object.keys(doc.);
+
+  // Log the extracted placeholders
+  // console.log("Extracted Placeholders:", placeholders);
+
+  // Generate the filled-in document as a buffer
+  const buf = doc.getZip().generate({ type: "nodebuffer" });
+
+  // Save the filled document to a new file
+  fs.writeFileSync(path.join(__dirname, "/output.docx"), buf);
+  res.send("File generated: output.docx");
 });
 
 app.listen(PORT, () => {

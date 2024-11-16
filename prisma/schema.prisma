@@ -30,35 +30,16 @@ model users {
 }
 
 model Form {
-  id         Int         @id @default(autoincrement())
-  name       String      @db.VarChar(40)
-  prefix     String      @db.VarChar(10)
-  desc       String      @db.Text
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  deletedAt  DateTime?
-  documentId String
-  document   Attachments @relation(fields: [documentId], references: [id])
-  FormField  FormField[]
-}
-
-model FormField {
-  id               String            @id @default(uuid())
-  name             String
-  mapperName       String?
-  orderNumber      Int
-  type             FormFieldType
-  hasAttachment    Boolean
-  required         Boolean           @default(false)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  deletedAt        DateTime?
-  formId           Int
-  form             Form              @relation(fields: [formId], references: [id])
-  formFieldId      String?
-  FormField        FormField?        @relation("form-field", fields: [formFieldId], references: [id])
-  attachmentFields FormField[]       @relation("form-field")
-  FormFieldSchema  FormFieldSchema[] @relation("form-field-schema")
+  id           Int            @id @default(autoincrement())
+  name         String //@db.VarChar(40)
+  prefix       String //@db.VarChar(10)
+  desc         String         @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+  documentId   String
+  document     Attachments    @relation(fields: [documentId], references: [id])
+  FormSections FormSections[]
 }
 
 model FormFieldSchema {
@@ -68,8 +49,34 @@ model FormFieldSchema {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
-  formFieldId   String
-  formField     FormField @relation("form-field-schema", fields: [formFieldId], references: [id])
+}
+
+model FormSections {
+  id          String      @id @default(uuid())
+  name        String
+  prefix      String
+  order       Int
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+  formId      Int
+  form        Form        @relation(fields: [formId], references: [id])
+  FormField   FormField[]
+}
+
+model FormField {
+  id            String        @id @default(uuid())
+  name          String
+  mapperName    String?
+  orderNumber   Int
+  type          FormFieldType
+  required      Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+  formSectionId String
+  formSection   FormSections  @relation(fields: [formSectionId], references: [id])
 }
 
 model Attachments {

@@ -10,6 +10,7 @@ import { Response } from "express";
 const uploadPath = path.join(__dirname + "../../../public/uploads");
 
 export default class AttachmentsService {
+  constructor() {}
   async getAttachment(id: string, res: Response) {
     const result = await prisma.attachments.findUnique({
       where: { id: id, deletedAt: null },
@@ -60,6 +61,7 @@ export default class AttachmentsService {
           select: {
             id: true,
             url: true,
+            originalName: true,
           },
         });
 
@@ -86,7 +88,7 @@ export default class AttachmentsService {
     });
 
     if (!data)
-      throw new AppError("No attachment Fount", HttpStatusEnum.NOT_FOUND);
+      throw new AppError("No attachment Found", HttpStatusEnum.NOT_FOUND);
 
     (file as UploadedFile).mv(
       uploadPath.concat(`/${data.name}`),

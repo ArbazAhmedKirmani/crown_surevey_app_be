@@ -68,14 +68,12 @@ FormController.get(
   }
 );
 
-// FormController.get("/child", async (req: Request, res: IResponse) => {
-//   const data = await formService.findParentAll(req);
-//   res.status(201).json({ data });
-// });
-
-// FormController.post("/child", async (req: Request, res: IResponse) => {
-//   const data = await formService.findById(req.body.formId);
-//   res.status(201).json({ data });
-// });
+FormController.delete(
+  "/",
+  catchAsync(async (req: Request, res: IResponse) => {
+    const data = await formService.deleteForm(req.body.id);
+    res.sendSuccess(data, "Successfully deleted");
+  })
+);
 
 export default FormController;
