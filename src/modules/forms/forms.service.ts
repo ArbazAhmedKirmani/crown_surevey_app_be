@@ -1,10 +1,15 @@
 import prisma from "../prisma";
 import { getQueryObject } from "../../utils/helpers/global.helper";
 import { IQueryListing } from "../../utils/interfaces/helper.interface";
-import { IFormCreateDto, IFormUpdateDto } from "./form.interface";
+import {
+  IFormCreateDto,
+  IFormFieldsUpdateDto,
+  IFormSectionDto,
+  IFormUpdateDto,
+} from "./form.interface";
 import AppError from "../../utils/middlewares/app-error.middleware";
 import { HttpStatusEnum } from "../../utils/enum/http.enum";
-import { PrismaClient } from "@prisma/client";
+import { FormFieldType, PrismaClient } from "@prisma/client";
 import { url } from "inspector";
 
 export default class FormService {
@@ -56,6 +61,7 @@ export default class FormService {
         },
         desc: true,
         FormSections: {
+          where: { deletedAt: null },
           select: {
             id: true,
             name: true,
@@ -63,6 +69,7 @@ export default class FormService {
             order: true,
             description: true,
             FormField: {
+              where: { deletedAt: null },
               select: {
                 id: true,
                 name: true,
@@ -70,6 +77,10 @@ export default class FormService {
                 orderNumber: true,
                 type: true,
                 required: true,
+                attachments: true,
+                placeholder: true,
+                rating: true,
+                values: true,
               },
             },
           },
@@ -108,7 +119,11 @@ export default class FormService {
                   mapperName: field.mapper,
                   orderNumber: +field.orderNo,
                   type: field.type,
-                  required: field.isRequired,
+                  required: field.required,
+                  attachments: field.attachments,
+                  placeholder: field.placeholder,
+                  rating: field.rating,
+                  values: field.values,
                 })),
               },
             },
@@ -119,47 +134,131 @@ export default class FormService {
     return form_result;
   }
 
-  async updateForm(id: number, body: IFormUpdateDto) {
-    const form_section = body.form_section;
-    const form_fields = body.form_section.flatMap((form) => form.form_fields);
+  async updateForm(id: number, body: any) {
+    //IFormUpdateDto) {
+    const { form_section, new_section } = body?.form_section?.reduce(
+      (acc: any, item: IFormSectionDto) => {
+        if (item?.id) {
+          acc.form_section.push(item);
+        } else {
+          acc.new_section.push(item);
+        }
+        return acc;
+      },
+      { form_section: [], new_section: [] }
+    );
 
-    if (form_section.length)
-      await this.prisma.$transaction([
-        prisma.form.update({
-          where: { id: id, deletedAt: null },
+    const update_fields = form_section?.reduce(
+      (acc: { sectionId: string; fields: any }, form: IFormSectionDto) => {
+        if (form?.form_fields && form?.id)
+          acc?.fields?.push({
+            sectionId: form.id,
+            fields: form.form_fields,
+          });
+        return acc;
+      },
+      { fields: [] }
+    );
+
+    const formSectionUpdates =
+      form_section?.map((update: IFormSectionDto) =>
+        this.prisma.formSections.update({
+          where: { id: update.id },
           data: {
-            ...(body?.form_name && { name: body.form_name }),
-            ...(body?.form_prefix && { prefix: body.form_prefix }),
-            ...(body?.form_document.length && {
-              documentId: body.form_document?.[0]?.id,
-            }),
-            ...(body?.form_description && { desc: body.form_description }),
+            ...(update?.name && { name: update.name }),
+            ...(update?.prefix && { prefix: update.prefix }),
+            ...(update?.description && { description: update.description }),
+            ...(update?.order && { order: Number(update.order) }),
           },
-        }),
-        ...form_section.map((update) =>
-          this.prisma.formSections.update({
-            where: { id: update.id },
-            data: {
-              name: update.name,
-              prefix: update.prefix,
-              description: update.description,
-              order: update.order,
-            },
+        })
+      ) || [];
+
+    const newSectionCreations =
+      new_section?.map((section: IFormSectionDto) =>
+        this.prisma.formSections.create({
+          data: {
+            formId: id,
+            name: section.name,
+            prefix: section.prefix,
+            description: section.description,
+            order: Number(section.order),
+            ...(section?.form_fields?.length && {
+              FormField: {
+                createMany: {
+                  data: section.form_fields
+                    .filter((x) => x.id === undefined)
+                    .map((field) => ({
+                      name: field.name,
+                      mapperName: field.mapper,
+                      orderNumber: Number(field.orderNo),
+                      type: field.type,
+                      required: field.required,
+                      attachments: field.attachments,
+                      placeholder: field.placeholder,
+                      rating: field.rating,
+                      values: field.values,
+                    })),
+                },
+              },
+            }),
+          },
+        })
+      ) || [];
+
+    const fieldUpdatesAndCreations =
+      update_fields?.fields?.flatMap(
+        (field: { sectionId: string; fields: IFormFieldsUpdateDto[] }) =>
+          field?.fields?.map((x) => {
+            if (x.id) {
+              return this.prisma.formField.update({
+                where: { id: x.id },
+                data: {
+                  name: x?.name,
+                  mapperName: x?.mapper,
+                  orderNumber: Number(x?.orderNo),
+                  type: x.type as FormFieldType,
+                  required: x?.required,
+                  attachments: x?.attachments,
+                  placeholder: x?.placeholder,
+                  rating: x?.rating,
+                  values: x?.values,
+                },
+              });
+            } else {
+              return this.prisma.formField.create({
+                data: {
+                  name: x.name as string,
+                  mapperName: x.mapper as string,
+                  orderNumber: Number(x.orderNo),
+                  type: x.type as FormFieldType,
+                  required: x.required as boolean,
+                  attachments: x.attachments as boolean,
+                  placeholder: x.placeholder as string,
+                  rating: x.rating as boolean,
+                  values: x.values as string[],
+                  formSectionId: field.sectionId as string,
+                },
+              });
+            }
           })
-        ),
-        ...form_fields.map((field) =>
-          this.prisma.formField.update({
-            where: { id: field?.id },
-            data: {
-              name: field?.name,
-              mapperName: field?.mapper,
-              orderNumber: field?.orderNo,
-              type: field?.type,
-              required: field?.isRequired,
-            },
-          })
-        ),
-      ]);
+      ) || [];
+
+    return await this.prisma.$transaction([
+      this.prisma.form.update({
+        where: { id: id, deletedAt: null },
+        data: {
+          ...(body?.form_name && { name: body.form_name }),
+          ...(body?.form_prefix && { prefix: body.form_prefix }),
+          ...(body?.form_document?.length && {
+            documentId: body.form_document?.[0]?.id,
+          }),
+          ...(body?.form_description && { desc: body.form_description }),
+        },
+      }),
+      ...formSectionUpdates,
+      ...newSectionCreations,
+      ...fieldUpdatesAndCreations,
+    ]);
   }
 
   async deleteForm(id: number) {
@@ -192,5 +291,23 @@ export default class FormService {
     }
 
     return { form: id, sections: sectionIds };
+  }
+
+  async deleteSection(id: string) {
+    await this.prisma.formSections.update({
+      where: { id: id },
+      data: {
+        deletedAt: new Date(Date.now()),
+      },
+    });
+  }
+
+  async deleteField(id: string) {
+    await this.prisma.formField.update({
+      where: { id: id },
+      data: {
+        deletedAt: new Date(Date.now()),
+      },
+    });
   }
 }

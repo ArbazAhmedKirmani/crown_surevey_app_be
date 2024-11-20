@@ -1,16 +1,22 @@
 import { FormFieldType } from "@prisma/client";
+import { JsonValue } from "@prisma/client/runtime/library";
 
 export interface IJobFormResponse {
   id: number | string;
   name: string;
-  prefix: string;
+  prefix?: string | null;
 }
 
 export interface IFormFieldResponse {
   id: string;
   name: string;
-  mapperName: string | null;
-  orderNumber: number;
-  required: boolean;
-  type: FormFieldType;
+  prefix?: string | null;
+  mapperName?: string | null;
+  orderNumber?: number;
+  required?: boolean;
+  type?: FormFieldType;
+  attachments?: boolean;
+  placeholder?: string | null;
+  rating?: boolean;
+  values?: JsonValue;
 }

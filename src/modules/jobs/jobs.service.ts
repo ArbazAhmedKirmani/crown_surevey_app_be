@@ -28,20 +28,52 @@ export default class JobsService {
     });
   }
 
-  async getFieldsBySection(id: string): Promise<IFormFieldResponse[]> {
+  async getFieldsBySection(id: string): Promise<IJobFormResponse[]> {
     return await this.prisma.formField.findMany({
       where: { deletedAt: null, formSectionId: id },
       select: {
         id: true,
         name: true,
-        mapperName: true,
-        orderNumber: true,
-        required: true,
-        type: true,
+        prefix: true,
       },
       orderBy: {
         orderNumber: "asc",
       },
     });
   }
+
+  async getFieldsById(id: string): Promise<IFormFieldResponse | null> {
+    return await this.prisma.formField.findUnique({
+      where: { deletedAt: null, id: id },
+      select: {
+        id: true,
+        name: true,
+        prefix: true,
+        attachments: true,
+        mapperName: true,
+        required: true,
+        type: true,
+        orderNumber: true,
+        placeholder: true,
+        rating: true,
+        values: true,
+      },
+    });
+  }
+
+  async getFloorplanById(id: string) {
+    return await this.prisma.floorPlan.findUniqueOrThrow({
+      where: { id: id },
+      select: {
+        id: true,
+        name: true,
+        height: true,
+        width: true,
+        planData: true,
+      },
+    });
+  }
+
+  async getJobs(data: any) {}
+  async createJob(data: any) {}
 }

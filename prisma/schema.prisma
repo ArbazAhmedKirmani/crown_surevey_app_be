@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum JobStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+  CANCELED
+}
+
 enum FormFieldType {
   CHECKBOX
   RADIO
@@ -24,9 +31,9 @@ model users {
   email     String    @unique
   password  String
   // role      Role     @default(USER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
 }
 
 model Form {
@@ -34,21 +41,22 @@ model Form {
   name         String //@db.VarChar(40)
   prefix       String //@db.VarChar(10)
   desc         String         @db.Text
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deletedAt    DateTime?
+  createdAt    DateTime       @default(now()) @db.Timestamptz()
+  updatedAt    DateTime       @updatedAt @db.Timestamptz()
+  deletedAt    DateTime?      @db.Timestamptz()
   documentId   String
   document     Attachments    @relation(fields: [documentId], references: [id])
   FormSections FormSections[]
+  jobs         Jobs[]
 }
 
 model FormFieldSchema {
   id            String    @id @default(uuid())
   label_content String
   type          String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  createdAt     DateTime  @default(now()) @db.Timestamptz()
+  updatedAt     DateTime  @updatedAt @db.Timestamptz()
+  deletedAt     DateTime? @db.Timestamptz()
 }
 
 model FormSections {
@@ -57,9 +65,9 @@ model FormSections {
   prefix      String
   order       Int
   description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?
+  createdAt   DateTime    @default(now()) @db.Timestamptz()
+  updatedAt   DateTime    @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?   @db.Timestamptz()
   formId      Int
   form        Form        @relation(fields: [formId], references: [id])
   FormField   FormField[]
@@ -68,15 +76,80 @@ model FormSections {
 model FormField {
   id            String        @id @default(uuid())
   name          String
+  prefix        String?
   mapperName    String?
   orderNumber   Int
   type          FormFieldType
   required      Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  deletedAt     DateTime?
+  rating        Boolean       @default(false)
+  attachments   Boolean       @default(false)
+  response      Boolean       @default(false)
+  placeholder   String?
+  values        Json?         @db.JsonB
+  createdAt     DateTime      @default(now()) @db.Timestamptz()
+  updatedAt     DateTime      @updatedAt @db.Timestamptz()
+  deletedAt     DateTime?     @db.Timestamptz()
   formSectionId String
   formSection   FormSections  @relation(fields: [formSectionId], references: [id])
+  responses     Responses[]
+}
+
+model FloorPlan {
+  id        String    @id @default(uuid())
+  name      String
+  planData  Json      @db.JsonB
+  height    Int
+  width     Int
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+}
+
+model Jobs {
+  id         String    @id @default(uuid())
+  name       String?
+  data       Json      @db.JsonB
+  status     JobStatus @default(PENDING)
+  formId     Int
+  form       Form      @relation(fields: [formId], references: [id])
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+  deletedAt  DateTime? @db.Timestamptz()
+  customerId String
+  customer   Customers @relation(fields: [customerId], references: [id])
+}
+
+model ResponseCategory {
+  id        String      @id @default(uuid())
+  name      String
+  prefix    String?
+  createdAt DateTime    @default(now()) @db.Timestamptz()
+  updatedAt DateTime    @updatedAt @db.Timestamptz()
+  deletedAt DateTime?   @db.Timestamptz()
+  Responses Responses[]
+}
+
+model Responses {
+  id         String           @id @default(uuid())
+  name       String
+  value      String           @db.Text
+  createdAt  DateTime         @default(now()) @db.Timestamptz()
+  updatedAt  DateTime         @updatedAt @db.Timestamptz()
+  deletedAt  DateTime?        @db.Timestamptz()
+  categoryId String
+  category   ResponseCategory @relation(fields: [categoryId], references: [id])
+  formFields FormField[]
+}
+
+model Customers {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  phone     String?
+  createdAt DateTime  @default(now()) @db.Timestamptz()
+  updatedAt DateTime  @updatedAt @db.Timestamptz()
+  deletedAt DateTime? @db.Timestamptz()
+  jobs      Jobs[]
 }
 
 model Attachments {
@@ -87,8 +160,8 @@ model Attachments {
   url          String
   mimeType     String
   size         Int?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
+  createdAt    DateTime  @default(now()) @db.Timestamptz()
+  updatedAt    DateTime  @updatedAt @db.Timestamptz()
+  deletedAt    DateTime? @db.Timestamptz()
   Form         Form[]
 }
