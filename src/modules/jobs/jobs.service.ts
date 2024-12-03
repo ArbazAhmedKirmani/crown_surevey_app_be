@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../prisma";
 import { IFormFieldResponse, IJobFormResponse } from "./jobs.interface";
+import { connect } from "http2";
+import { formField } from "pdfkit";
 
 export default class JobsService {
   prisma: PrismaClient;
@@ -28,13 +30,21 @@ export default class JobsService {
     });
   }
 
-  async getFieldsBySection(id: string): Promise<IJobFormResponse[]> {
+  async getFieldsBySection(
+    id: string,
+    jobId: string
+  ): Promise<IJobFormResponse[]> {
     return await this.prisma.formField.findMany({
       where: { deletedAt: null, formSectionId: id },
       select: {
         id: true,
         name: true,
         prefix: true,
+        mapperName: true,
+        JobFields: {
+          where: { jobId: jobId },
+          select: { id: true },
+        },
       },
       orderBy: {
         orderNumber: "asc",
@@ -57,6 +67,7 @@ export default class JobsService {
         placeholder: true,
         rating: true,
         values: true,
+        response: true,
       },
     });
   }
@@ -74,6 +85,40 @@ export default class JobsService {
     });
   }
 
-  async getJobs(data: any) {}
-  async createJob(data: any) {}
+  async getJobsField(id: any, jobId: string) {
+    const result = await this.prisma.jobFields.findMany({
+      where: { formFieldId: id, jobId: jobId },
+      select: {
+        id: true,
+        data: true,
+      },
+    });
+    return result?.[0];
+  }
+
+  async createJob(data: any) {
+    const result = await this.prisma.jobs.create({
+      data: {
+        name: data.name,
+        form: { connect: { id: data.formId } },
+      },
+      select: { id: true, formId: true },
+    });
+
+    return result;
+  }
+
+  async createJobDetail(id: any, data: any) {
+    const result = await this.prisma.jobFields.upsert({
+      where: { id: data.id ?? "abc" },
+      update: { data: data.data },
+      create: {
+        job: { connect: { id: id } },
+        formField: { connect: { id: data.fieldId } },
+        data: data.data,
+      },
+    });
+
+    return result;
+  }
 }

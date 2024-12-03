@@ -18,8 +18,9 @@ class JobsController {
     this.router.get("/forms/:id", this.getSectionsByFormId.bind(this));
     this.router.get("/section/:id", this.getFieldsBySectionId.bind(this));
     this.router.get("/field/:id", this.getFieldById.bind(this));
-    this.router.get("/", this.getJobs.bind(this));
+    this.router.get("/detail/:id/job/:jobId", this.getJobsDetail.bind(this));
     this.router.post("/", this.createJobs.bind(this));
+    this.router.post("/detail/:id", this.createJobDetail.bind(this));
   }
 
   private getFormList = catchAsync(async (req: Request, res: IResponse) => {
@@ -36,7 +37,10 @@ class JobsController {
 
   private getFieldsBySectionId = catchAsync(
     async (req: Request, res: IResponse) => {
-      const result = await this.jobsService.getFieldsBySection(req.params.id!);
+      const result = await this.jobsService.getFieldsBySection(
+        req.params.id!,
+        req?.query?.jobId as string
+      );
       res.sendSuccess(result);
     }
   );
@@ -46,13 +50,24 @@ class JobsController {
     res.sendSuccess(result);
   });
 
-  private getJobs = catchAsync(async (req: Request, res: IResponse) => {
-    const result = await this.jobsService.getJobs(req.params.id!);
+  private getJobsDetail = catchAsync(async (req: Request, res: IResponse) => {
+    const result = await this.jobsService.getJobsField(
+      req.params.id!,
+      req.params.jobId!
+    );
     res.sendSuccess(result);
   });
 
   private createJobs = catchAsync(async (req: Request, res: IResponse) => {
     const result = await this.jobsService.createJob(req.body);
+    res.sendSuccess(result);
+  });
+
+  private createJobDetail = catchAsync(async (req: Request, res: IResponse) => {
+    const result = await this.jobsService.createJobDetail(
+      req.params.id,
+      req.body
+    );
     res.sendSuccess(result);
   });
 }
