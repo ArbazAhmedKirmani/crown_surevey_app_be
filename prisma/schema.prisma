@@ -74,24 +74,25 @@ model FormSections {
 }
 
 model FormField {
-  id            String        @id @default(uuid())
-  name          String
-  prefix        String?
-  mapperName    String?
-  orderNumber   Int
-  type          FormFieldType
-  required      Boolean       @default(false)
-  rating        Boolean       @default(false)
-  attachments   Boolean       @default(false)
-  response      Boolean       @default(false)
-  placeholder   String?
-  values        Json?         @db.JsonB
-  createdAt     DateTime      @default(now()) @db.Timestamptz()
-  updatedAt     DateTime      @updatedAt @db.Timestamptz()
-  deletedAt     DateTime?     @db.Timestamptz()
-  formSectionId String
-  formSection   FormSections  @relation(fields: [formSectionId], references: [id])
-  responses     Responses[]
+  id                String             @id @default(uuid())
+  name              String
+  prefix            String?
+  mapperName        String?
+  orderNumber       Int
+  type              FormFieldType
+  required          Boolean            @default(false)
+  rating            Boolean            @default(false)
+  attachments       Boolean            @default(false)
+  response          Boolean            @default(false)
+  placeholder       String?
+  values            Json?              @db.JsonB
+  createdAt         DateTime           @default(now()) @db.Timestamptz()
+  updatedAt         DateTime           @updatedAt @db.Timestamptz()
+  deletedAt         DateTime?          @db.Timestamptz()
+  formSectionId     String
+  formSection       FormSections       @relation(fields: [formSectionId], references: [id])
+  responsesCategory ResponseCategory[]
+  JobFields         JobFields[]
 }
 
 model FloorPlan {
@@ -106,39 +107,51 @@ model FloorPlan {
 }
 
 model Jobs {
-  id         String    @id @default(uuid())
+  id         String      @id @default(uuid())
   name       String?
-  data       Json      @db.JsonB
-  status     JobStatus @default(PENDING)
+  status     JobStatus   @default(PENDING)
   formId     Int
-  form       Form      @relation(fields: [formId], references: [id])
-  createdAt  DateTime  @default(now()) @db.Timestamptz()
-  updatedAt  DateTime  @updatedAt @db.Timestamptz()
-  deletedAt  DateTime? @db.Timestamptz()
-  customerId String
-  customer   Customers @relation(fields: [customerId], references: [id])
+  form       Form        @relation(fields: [formId], references: [id])
+  createdAt  DateTime    @default(now()) @db.Timestamptz()
+  updatedAt  DateTime    @updatedAt @db.Timestamptz()
+  deletedAt  DateTime?   @db.Timestamptz()
+  customerId String?
+  customer   Customers?  @relation(fields: [customerId], references: [id])
+  JobFields  JobFields[]
+}
+
+model JobFields {
+  id          String    @id @default(uuid())
+  data        Json      @db.JsonB
+  formFieldId String
+  formField   FormField @relation(fields: [formFieldId], references: [id])
+  jobId       String
+  job         Jobs      @relation(fields: [jobId], references: [id])
+
+  @@unique([formFieldId, jobId])
 }
 
 model ResponseCategory {
-  id        String      @id @default(uuid())
-  name      String
-  prefix    String?
-  createdAt DateTime    @default(now()) @db.Timestamptz()
-  updatedAt DateTime    @updatedAt @db.Timestamptz()
-  deletedAt DateTime?   @db.Timestamptz()
-  Responses Responses[]
+  id         String      @id @default(uuid())
+  name       String
+  prefix     String?
+  createdAt  DateTime    @default(now()) @db.Timestamptz()
+  updatedAt  DateTime    @updatedAt @db.Timestamptz()
+  deletedAt  DateTime?   @db.Timestamptz()
+  Responses  Responses[]
+  formFields FormField[]
 }
 
 model Responses {
   id         String           @id @default(uuid())
   name       String
   value      String           @db.Text
+  isSiteNote Boolean          @default(false)
   createdAt  DateTime         @default(now()) @db.Timestamptz()
   updatedAt  DateTime         @updatedAt @db.Timestamptz()
   deletedAt  DateTime?        @db.Timestamptz()
   categoryId String
   category   ResponseCategory @relation(fields: [categoryId], references: [id])
-  formFields FormField[]
 }
 
 model Customers {

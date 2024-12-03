@@ -13,7 +13,7 @@ export interface IFormSectionDto {
   prefix: string;
   order: number;
   description: string;
-  form_fields: IFormFieldsCreateDto[];
+  form_field: IFormFieldsCreateDto[];
 }
 
 export interface IFormCreateDto {
@@ -21,7 +21,7 @@ export interface IFormCreateDto {
   form_prefix: string;
   form_document: IFiles[];
   form_description: string;
-  form_section: IFormSectionDto[];
+  section: IFormSectionDto[];
 }
 
 export interface IFormUpdateDto {
@@ -37,21 +37,23 @@ export interface IFormUpdateDto {
 export interface IFormFieldsCreateDto {
   id?: string;
   name: string;
-  mapper: string;
+  mapperName: string;
   orderNo: number;
   type: FormFieldType;
   form_document: IFiles[];
   required: boolean;
   rating: boolean;
-  attachments: boolean;
+  reference: boolean;
   placeholder: string;
   values?: string[];
+  prefix: string;
+  formSectionId?: string;
 }
 
 export interface IFormFieldsUpdateDto {
   id: string;
   name?: string;
-  mapper: string;
+  mapperName: string;
   orderNo?: number;
   type?: FormFieldType;
   required?: boolean;
@@ -59,4 +61,6 @@ export interface IFormFieldsUpdateDto {
   attachments?: boolean;
   placeholder?: string;
   values?: string[];
+  prefix?: string;
+  reference: boolean;
 }

@@ -3,6 +3,7 @@ import { getQueryObject } from "../../utils/helpers/global.helper";
 import { IQueryListing } from "../../utils/interfaces/helper.interface";
 import {
   IFormCreateDto,
+  IFormFieldsCreateDto,
   IFormFieldsUpdateDto,
   IFormSectionDto,
   IFormUpdateDto,
@@ -81,9 +82,15 @@ export default class FormService {
                 placeholder: true,
                 rating: true,
                 values: true,
+                prefix: true,
+                response: true,
+              },
+              orderBy: {
+                orderNumber: "asc",
               },
             },
           },
+          orderBy: { order: "asc" },
         },
       },
     });
@@ -92,6 +99,7 @@ export default class FormService {
     }
     return data;
   }
+
   async createForm(body: IFormCreateDto) {
     const form_result = await this.prisma.form.create({
       data: {
@@ -102,8 +110,8 @@ export default class FormService {
       },
     });
 
-    for (let i = 0; i < body.form_section.length; i++) {
-      const section = body.form_section[i];
+    for (let i = 0; i < body?.section?.length; i++) {
+      const section = body.section[i];
       await this.prisma.formSections.create({
         data: {
           formId: form_result.id,
@@ -111,19 +119,20 @@ export default class FormService {
           prefix: section.prefix,
           description: section.description,
           order: +section.order,
-          ...(section.form_fields.length && {
+          ...(section.form_field.length && {
             FormField: {
               createMany: {
-                data: section.form_fields.map((field) => ({
+                data: section.form_field.map((field) => ({
                   name: field.name,
-                  mapperName: field.mapper,
+                  mapperName: field.mapperName,
                   orderNumber: +field.orderNo,
                   type: field.type,
                   required: field.required,
-                  attachments: field.attachments,
                   placeholder: field.placeholder,
                   rating: field.rating,
                   values: field.values,
+                  response: field.reference,
+                  prefix: field.prefix,
                 })),
               },
             },
@@ -134,33 +143,80 @@ export default class FormService {
     return form_result;
   }
 
-  async updateForm(id: number, body: any) {
-    //IFormUpdateDto) {
-    const { form_section, new_section } = body?.form_section?.reduce(
+  async updateForm(id: number, body: IFormCreateDto) {
+    const { form_section, new_section, form_fields } = body?.section?.reduce(
       (acc: any, item: IFormSectionDto) => {
         if (item?.id) {
+          acc.form_fields = [
+            ...acc.form_fields,
+            ...item.form_field.map((x) => ({ ...x, formSectionId: item.id })),
+          ];
           acc.form_section.push(item);
         } else {
           acc.new_section.push(item);
         }
         return acc;
       },
-      { form_section: [], new_section: [] }
+      { form_section: [], new_section: [], form_fields: [] }
     );
 
-    const update_fields = form_section?.reduce(
-      (acc: { sectionId: string; fields: any }, form: IFormSectionDto) => {
-        if (form?.form_fields && form?.id)
-          acc?.fields?.push({
-            sectionId: form.id,
-            fields: form.form_fields,
-          });
-        return acc;
+    const { new_fields, old_fields } = form_fields?.reduce(
+      (prev: any, curr: IFormFieldsUpdateDto) => {
+        if (curr?.id) {
+          prev?.old_fields?.push(curr);
+        } else {
+          prev?.new_fields?.push(curr);
+        }
+        return prev;
       },
-      { fields: [] }
+      {
+        new_fields: [],
+        old_fields: [],
+      }
     );
 
-    const formSectionUpdates =
+    const updateForm = this.prisma.form.update({
+      where: { id: id, deletedAt: null },
+      data: {
+        ...(body?.form_name && { name: body.form_name }),
+        ...(body?.form_prefix && { prefix: body.form_prefix }),
+        ...(body?.form_document?.length && {
+          documentId: body.form_document?.[0]?.id,
+        }),
+        ...(body?.form_description && { desc: body.form_description }),
+      },
+    });
+
+    const createNewSectionAndFields = new_section?.map(
+      (section: IFormSectionDto) =>
+        this.prisma.formSections.create({
+          data: {
+            name: section.name,
+            order: Number(section.order),
+            prefix: section.prefix,
+            formId: id,
+            description: section.description,
+            FormField: {
+              createMany: {
+                data: section.form_field.map((field) => ({
+                  name: field.name,
+                  orderNumber: Number(field.orderNo),
+                  type: field.type,
+                  mapperName: field.mapperName,
+                  placeholder: field.placeholder,
+                  prefix: field.prefix,
+                  rating: field.rating,
+                  required: field.required,
+                  response: field.reference,
+                  values: field.values,
+                })),
+              },
+            },
+          },
+        })
+    );
+
+    const updateFormSections =
       form_section?.map((update: IFormSectionDto) =>
         this.prisma.formSections.update({
           where: { id: update.id },
@@ -173,91 +229,48 @@ export default class FormService {
         })
       ) || [];
 
-    const newSectionCreations =
-      new_section?.map((section: IFormSectionDto) =>
-        this.prisma.formSections.create({
-          data: {
-            formId: id,
-            name: section.name,
-            prefix: section.prefix,
-            description: section.description,
-            order: Number(section.order),
-            ...(section?.form_fields?.length && {
-              FormField: {
-                createMany: {
-                  data: section.form_fields
-                    .filter((x) => x.id === undefined)
-                    .map((field) => ({
-                      name: field.name,
-                      mapperName: field.mapper,
-                      orderNumber: Number(field.orderNo),
-                      type: field.type,
-                      required: field.required,
-                      attachments: field.attachments,
-                      placeholder: field.placeholder,
-                      rating: field.rating,
-                      values: field.values,
-                    })),
-                },
-              },
-            }),
-          },
-        })
-      ) || [];
+    const createNewFields = this.prisma.formField.createMany({
+      data: new_fields?.map((field: IFormFieldsCreateDto) => ({
+        name: field?.name,
+        mapperName: field?.mapperName,
+        orderNumber: Number(field?.orderNo),
+        type: field?.type,
+        required: field?.required,
+        attachments: field?.reference,
+        placeholder: field?.placeholder,
+        rating: field?.rating,
+        values: field?.values,
+        prefix: field?.prefix,
+        response: field?.reference,
+        formSectionId: field?.formSectionId,
+      })),
+    });
 
-    const fieldUpdatesAndCreations =
-      update_fields?.fields?.flatMap(
-        (field: { sectionId: string; fields: IFormFieldsUpdateDto[] }) =>
-          field?.fields?.map((x) => {
-            if (x.id) {
-              return this.prisma.formField.update({
-                where: { id: x.id },
-                data: {
-                  name: x?.name,
-                  mapperName: x?.mapper,
-                  orderNumber: Number(x?.orderNo),
-                  type: x.type as FormFieldType,
-                  required: x?.required,
-                  attachments: x?.attachments,
-                  placeholder: x?.placeholder,
-                  rating: x?.rating,
-                  values: x?.values,
-                },
-              });
-            } else {
-              return this.prisma.formField.create({
-                data: {
-                  name: x.name as string,
-                  mapperName: x.mapper as string,
-                  orderNumber: Number(x.orderNo),
-                  type: x.type as FormFieldType,
-                  required: x.required as boolean,
-                  attachments: x.attachments as boolean,
-                  placeholder: x.placeholder as string,
-                  rating: x.rating as boolean,
-                  values: x.values as string[],
-                  formSectionId: field.sectionId as string,
-                },
-              });
-            }
-          })
-      ) || [];
+    const updateOldFields = old_fields?.map((update: IFormFieldsUpdateDto) =>
+      this.prisma.formField.update({
+        where: { id: update.id },
+        data: {
+          required: update?.required,
+          rating: update?.rating,
+          response: update?.reference,
+          ...(update?.name && { name: update.name }),
+          ...(update?.prefix && { prefix: update.prefix }),
+          ...(update?.type && { type: update.type }),
+          ...(update?.mapperName && { mapperName: update.mapperName }),
+          ...(update?.orderNo && { orderNumber: Number(update.orderNo) }),
+          ...(update?.placeholder && { placeholder: update.placeholder }),
+          ...(update?.values && { values: update.values }),
+          ...(update?.attachments && { attachments: update.attachments }),
+        },
+      })
+    );
 
     return await this.prisma.$transaction([
-      this.prisma.form.update({
-        where: { id: id, deletedAt: null },
-        data: {
-          ...(body?.form_name && { name: body.form_name }),
-          ...(body?.form_prefix && { prefix: body.form_prefix }),
-          ...(body?.form_document?.length && {
-            documentId: body.form_document?.[0]?.id,
-          }),
-          ...(body?.form_description && { desc: body.form_description }),
-        },
-      }),
-      ...formSectionUpdates,
-      ...newSectionCreations,
-      ...fieldUpdatesAndCreations,
+      updateForm,
+      ...createNewSectionAndFields,
+      ...updateFormSections,
+      createNewFields,
+      ...updateOldFields,
     ]);
   }
 
