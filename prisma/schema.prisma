@@ -23,6 +23,7 @@ enum FormFieldType {
   TABLE
   SENTENCE
   DATE
+  ACCOMODATION
 }
 
 model users {
