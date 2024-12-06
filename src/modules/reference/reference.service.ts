@@ -23,6 +23,9 @@ export default class ReferenceService {
             { value: { contains: query?.search, mode: "insensitive" } },
           ],
         }),
+        category: {
+          deletedAt: null,
+        },
       },
       select: {
         id: true,
@@ -57,10 +60,10 @@ export default class ReferenceService {
     return await this.prisma.responses.findMany({
       where: {
         deletedAt: null,
-        categoryId: id,
         ...(query?.search && {
           name: { contains: query?.search, mode: "insensitive" },
         }),
+        category: { id: id, deletedAt: null },
       },
       select: {
         id: true,
@@ -142,6 +145,15 @@ export default class ReferenceService {
 
   async deleteResponse(id: string) {
     await this.prisma.responses.update({
+      where: { id: id, deletedAt: null },
+      data: {
+        deletedAt: new Date(Date.now()),
+      },
+    });
+  }
+
+  async deleteResponseCategory(id: string) {
+    await this.prisma.responseCategory.update({
       where: { id: id, deletedAt: null },
       data: {
         deletedAt: new Date(Date.now()),

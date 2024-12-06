@@ -32,6 +32,10 @@ class ReferenceController {
     this.router.post("/category", this.createReferencesCategory.bind(this));
     this.router.put("/:id", this.updateReferences.bind(this));
     this.router.delete("/:id", this.deleteReferences.bind(this));
+    this.router.delete(
+      "/category/:id",
+      this.deleteReferenceCategory.bind(this)
+    );
   }
 
   private getAllReferences = catchAsync(
@@ -78,6 +82,15 @@ class ReferenceController {
   private deleteReferences = catchAsync(
     async (req: Request, res: IResponse) => {
       const result = await this.referenceService.deleteResponse(req.params.id);
+      res.sendSuccess(result);
+    }
+  );
+
+  private deleteReferenceCategory = catchAsync(
+    async (req: Request, res: IResponse) => {
+      const result = await this.referenceService.deleteResponseCategory(
+        req.params.id
+      );
       res.sendSuccess(result);
     }
   );
