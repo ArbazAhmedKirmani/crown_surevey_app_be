@@ -1,8 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../prisma";
-import { IFormFieldResponse, IJobFormResponse } from "./jobs.interface";
-import { connect } from "http2";
-import { formField } from "pdfkit";
+import {
+  IFormFieldResponse,
+  IFormListResponse,
+  IGetJobs,
+  IJobFormResponse,
+} from "./jobs.interface";
+import { getQueryObject } from "../../utils/helpers/global.helper";
+import { count } from "console";
 
 export default class JobsService {
   prisma: PrismaClient;
@@ -10,7 +15,7 @@ export default class JobsService {
     this.prisma = prisma;
   }
 
-  async getFormList(): Promise<IJobFormResponse[]> {
+  async getFormList(): Promise<IFormListResponse[]> {
     return await this.prisma.form.findMany({
       where: { deletedAt: null },
       select: { id: true, name: true, prefix: true },
@@ -20,12 +25,23 @@ export default class JobsService {
     });
   }
 
-  async getSectionsByForm(id: string): Promise<IJobFormResponse[]> {
-    return await this.prisma.formSections.findMany({
-      where: { deletedAt: null, formId: +id },
-      select: { id: true, name: true, prefix: true },
-      orderBy: {
-        prefix: "asc",
+  async getSectionsByForm(id: string): Promise<IJobFormResponse | null> {
+    return await this.prisma.jobs.findUnique({
+      where: { deletedAt: null, id: id },
+      select: {
+        form: {
+          select: {
+            id: true,
+            FormSections: {
+              select: {
+                id: true,
+                name: true,
+                prefix: true,
+              },
+              orderBy: { order: "asc" },
+            },
+          },
+        },
       },
     });
   }
@@ -33,7 +49,7 @@ export default class JobsService {
   async getFieldsBySection(
     id: string,
     jobId: string
-  ): Promise<IJobFormResponse[]> {
+  ): Promise<IFormListResponse[]> {
     return await this.prisma.formField.findMany({
       where: { deletedAt: null, formSectionId: id },
       select: {
@@ -42,8 +58,12 @@ export default class JobsService {
         prefix: true,
         mapperName: true,
         JobFields: {
-          where: { jobId: jobId },
-          select: { id: true },
+          select: {
+            id: true,
+          },
+          where: {
+            jobId: jobId,
+          },
         },
       },
       orderBy: {
@@ -96,6 +116,54 @@ export default class JobsService {
     return result?.[0];
   }
 
+  async getJob(query: IGetJobs) {
+    const data = await this.prisma.jobs.findMany({
+      where: {
+        ...(query.status && { status: query.status }),
+        ...(query.search && {
+          name: { contains: query.search, mode: "insensitive" },
+        }),
+      },
+      select: {
+        id: true,
+        form: { select: { name: true, id: true } },
+        name: true,
+        customer: { select: { id: true, name: true, email: true } },
+      },
+      ...(query && getQueryObject(query)),
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const count = await this.prisma.jobs.count({
+      where: {
+        ...(query.status && { status: query.status }),
+        ...(query.search && {
+          name: { contains: query.search, mode: "insensitive" },
+        }),
+      },
+    });
+
+    return { data, count };
+  }
+
+  async getJobById(id: string) {
+    const data = await this.prisma.jobs.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        form: { select: { name: true, id: true } },
+        name: true,
+        customer: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    return data;
+  }
+
   async createJob(data: any) {
     const result = await this.prisma.jobs.create({
       data: {
@@ -110,7 +178,12 @@ export default class JobsService {
 
   async createJobDetail(id: any, data: any) {
     const result = await this.prisma.jobFields.upsert({
-      where: { id: data.id ?? "abc" },
+      where: {
+        formFieldId_jobId: {
+          formFieldId: data?.fieldId,
+          jobId: id,
+        },
+      },
       update: { data: data.data },
       create: {
         job: { connect: { id: id } },

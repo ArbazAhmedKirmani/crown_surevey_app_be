@@ -1,10 +1,21 @@
-import { FormFieldType } from "@prisma/client";
+import { FormFieldType, JobStatus } from "@prisma/client";
 import { JsonValue } from "@prisma/client/runtime/library";
+import { IQueryListing } from "../../utils/interfaces/helper.interface";
 
-export interface IJobFormResponse {
+export interface IFormListResponse {
   id: number | string;
   name: string;
   prefix?: string | null;
+}
+export interface IJobFormResponse {
+  form: {
+    id: number;
+    FormSections: {
+      id: string;
+      name: string;
+      prefix?: string | null;
+    }[];
+  };
 }
 
 export interface IFormFieldResponse {
@@ -19,4 +30,8 @@ export interface IFormFieldResponse {
   placeholder?: string | null;
   rating?: boolean;
   values?: JsonValue;
+}
+
+export interface IGetJobs extends IQueryListing {
+  status: JobStatus;
 }

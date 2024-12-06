@@ -69,9 +69,9 @@ FormController.get(
 );
 
 FormController.delete(
-  "/",
+  "/:id",
   catchAsync(async (req: Request, res: IResponse) => {
-    const data = await formService.deleteForm(req.body.id);
+    const data = await formService.deleteForm(+req.params.id!);
     res.sendSuccess(data, "Successfully deleted");
   })
 );
