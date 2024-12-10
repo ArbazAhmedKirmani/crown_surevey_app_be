@@ -7,7 +7,6 @@ import {
   IJobFormResponse,
 } from "./jobs.interface";
 import { getQueryObject } from "../../utils/helpers/global.helper";
-import { count } from "console";
 
 export default class JobsService {
   prisma: PrismaClient;
@@ -79,7 +78,6 @@ export default class JobsService {
         id: true,
         name: true,
         prefix: true,
-        attachments: true,
         mapperName: true,
         required: true,
         type: true,

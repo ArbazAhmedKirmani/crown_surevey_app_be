@@ -32,7 +32,10 @@ export default class AttachmentsService {
     res.send(Buffer.from(file));
   }
 
-  async uploadFile(file: UploadedFile | undefined, res: IResponse) {
+  async uploadFile(
+    file: UploadedFile | UploadedFile | undefined,
+    res: IResponse
+  ) {
     if (!file)
       throw new AppError("No file uploaded", HttpStatusEnum.MISDIRECTED);
 
@@ -54,7 +57,7 @@ export default class AttachmentsService {
             name: filename,
             originalName: file.name,
             path: `/uploads/${filename}`,
-            url: `http://localhost:3002/api/uploads/${filename}`,
+            url: `http://localhost:3002/uploads/${filename}`,
             mimeType: file.mimetype,
             size: file.size,
           },
@@ -105,7 +108,7 @@ export default class AttachmentsService {
             name: data.name,
             originalName: file.name,
             path: `/uploads/${data.name}`,
-            url: `http://localhost:3002/api/uploads/${data.name}`,
+            url: `http://localhost:3002/uploads/${data.name}`,
             mimeType: file.mimetype,
             size: file.size,
           },
