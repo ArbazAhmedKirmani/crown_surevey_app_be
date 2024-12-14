@@ -1,12 +1,9 @@
 import { Request, Router } from "express";
-import prisma from "../prisma";
 import { catchAsync } from "../../utils/middlewares/app-error.middleware";
 import { IResponse } from "../../utils/middlewares/response-enhancer.middleware";
-import SchemaService from "./schema.service";
 import { IQueryListing } from "../../utils/interfaces/helper.interface";
 
 const SchemaController = Router();
-const schemaService = new SchemaService();
 
 SchemaController.get(
   "/",

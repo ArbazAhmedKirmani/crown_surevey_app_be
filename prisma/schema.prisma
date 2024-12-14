@@ -111,6 +111,7 @@ model Jobs {
   id         String      @id @default(uuid())
   name       String?
   status     JobStatus   @default(PENDING)
+  fulfilDate DateTime?   @db.Timestamptz()
   formId     Int
   form       Form        @relation(fields: [formId], references: [id])
   createdAt  DateTime    @default(now()) @db.Timestamptz()

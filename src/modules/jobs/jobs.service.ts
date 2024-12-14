@@ -4,6 +4,7 @@ import {
   IFormFieldResponse,
   IFormListResponse,
   IGetJobs,
+  IJobCreate,
   IJobFormResponse,
 } from "./jobs.interface";
 import { getQueryObject } from "../../utils/helpers/global.helper";
@@ -162,11 +163,15 @@ export default class JobsService {
     return data;
   }
 
-  async createJob(data: any) {
+  async createJob(data: IJobCreate) {
     const result = await this.prisma.jobs.create({
       data: {
         name: data.name,
         form: { connect: { id: data.formId } },
+        ...(data?.fulfil_date && { fulfilDate: data.fulfil_date }),
+        ...(data?.customerId && {
+          customer: { connect: { id: data.customerId } },
+        }),
       },
       select: { id: true, formId: true },
     });

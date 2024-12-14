@@ -5,6 +5,7 @@ import FormController from "../modules/forms/forms.controller";
 import AttachmentController from "../modules/attachments/attachments.controller";
 import JobsController from "../modules/jobs/jobs.controller";
 import ReferenceController from "../modules/reference/reference.controller";
+import CustomerController from "../modules/customer/customer.controller";
 
 const ProtectedRoutes = Router();
 
@@ -16,5 +17,6 @@ ProtectedRoutes.use("/jobs", JobsController);
 ProtectedRoutes.use("/form", FormController);
 ProtectedRoutes.use("/schema", SchemaController);
 ProtectedRoutes.use("/upload", AttachmentController);
+ProtectedRoutes.use("/customer", CustomerController);
 
 export default ProtectedRoutes;
