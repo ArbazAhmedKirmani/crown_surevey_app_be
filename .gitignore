@@ -1,3 +1,6 @@
+dist
+dist/modules
+dist/utils
 node_modules
 src/public
 src/docs

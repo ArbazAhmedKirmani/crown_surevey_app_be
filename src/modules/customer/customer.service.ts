@@ -13,7 +13,9 @@ export default class CustomerService {
     const data = await this.prisma.customers.findMany({
       where: {
         deletedAt: null,
-        OR: [{ name: { contains: query?.search, mode: "insensitive" } }],
+        ...(query?.search && {
+          OR: [{ name: { contains: query?.search, mode: "insensitive" } }],
+        }),
       },
       select: { id: true, email: true, name: true, phone: true },
       ...(query && getQueryObject(query)),

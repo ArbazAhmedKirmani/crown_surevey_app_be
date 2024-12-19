@@ -41,4 +41,5 @@ export interface IJobCreate {
   formId: number;
   customerId?: string;
   fulfil_date?: string;
+  address?: string;
 }

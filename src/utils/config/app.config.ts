@@ -14,6 +14,7 @@ const AppConfig = {
       10
     ),
   },
+  DOC_IMAGE: { HEIGTH: 250, WIDTH: 250 },
 };
 
 Object.seal(AppConfig);

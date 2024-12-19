@@ -1,4 +1,4 @@
-import { Request, Router } from "express";
+import { Request, Response, Router } from "express";
 import { catchAsync } from "../../utils/middlewares/app-error.middleware";
 import { IResponse } from "../../utils/middlewares/response-enhancer.middleware";
 import JobsService from "./jobs.service";
@@ -15,6 +15,7 @@ class JobsController {
   }
 
   private registerRoutes() {
+    this.router.get("/:id/generate-pdf", this.generateJobPdf.bind(this));
     this.router.get("/forms", this.getFormList.bind(this));
     this.router.get("/forms/:id", this.getSectionsByFormId.bind(this));
     this.router.get(
@@ -23,10 +24,12 @@ class JobsController {
     );
     this.router.get("/field/:id", this.getFieldById.bind(this));
     this.router.get("/detail/:id/job/:jobId", this.getJobsDetail.bind(this));
-    this.router.get("/", this.getJobs.bind(this));
     this.router.get("/:id", this.getJobById.bind(this));
+    this.router.get("/", this.getJobs.bind(this));
+    this.router.get("/:id/status", this.getJobStatus.bind(this));
     this.router.post("/", this.createJobs.bind(this));
     this.router.post("/detail/:id", this.createJobDetail.bind(this));
+    this.router.put("/:id/status", this.updateJobStatus.bind(this));
   }
 
   private getFormList = catchAsync(async (req: Request, res: IResponse) => {
@@ -99,6 +102,31 @@ class JobsController {
     );
     res.sendSuccess(result, "Job updated successfully");
   });
+
+  private updateJobStatus = catchAsync(async (req: Request, res: IResponse) => {
+    const result = await this.jobsService.updateJobStatus(
+      req.params.id!,
+      req.body
+    );
+    res.sendSuccess(result, "Status successfully updated");
+  });
+
+  private getJobStatus = catchAsync(async (req: Request, res: IResponse) => {
+    const result = await this.jobsService.getJobStatus(req.params.id!);
+    res.sendSuccess(result, "Status successfully updated");
+  });
+
+  private generateJobPdf = catchAsync(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const pdfBuffer = await this.jobsService.generatePdf(req.params.id);
+      res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": 'attachment; filename="document.pdf"',
+      });
+
+      res.end(pdfBuffer);
+    }
+  );
 }
 
 export default new JobsController().router;

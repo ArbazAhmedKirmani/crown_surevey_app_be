@@ -78,7 +78,7 @@ model FormField {
   id                String             @id @default(uuid())
   name              String
   prefix            String?
-  mapperName        String?
+  mapperName        String
   orderNumber       Int
   type              FormFieldType
   required          Boolean            @default(false)
@@ -112,6 +112,7 @@ model Jobs {
   name       String?
   status     JobStatus   @default(PENDING)
   fulfilDate DateTime?   @db.Timestamptz()
+  address    String?
   formId     Int
   form       Form        @relation(fields: [formId], references: [id])
   createdAt  DateTime    @default(now()) @db.Timestamptz()

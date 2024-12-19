@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import prisma from "../prisma";
+import { JobStatus, PrismaClient } from "@prisma/client";
+import * as p_client from "../prisma";
 import {
   IFormFieldResponse,
   IFormListResponse,
@@ -8,11 +8,14 @@ import {
   IJobFormResponse,
 } from "./jobs.interface";
 import { getQueryObject } from "../../utils/helpers/global.helper";
+import { generatePdfBuffer } from "../../utils/helpers/generate-pdf.helper";
+import path from "path";
 
 export default class JobsService {
   prisma: PrismaClient;
+
   constructor() {
-    this.prisma = prisma;
+    this.prisma = p_client.default;
   }
 
   async getFormList(): Promise<IFormListResponse[]> {
@@ -128,6 +131,8 @@ export default class JobsService {
         form: { select: { name: true, id: true } },
         name: true,
         customer: { select: { id: true, name: true, email: true } },
+        address: true,
+        fulfilDate: true,
       },
       ...(query && getQueryObject(query)),
       orderBy: {
@@ -156,6 +161,8 @@ export default class JobsService {
         id: true,
         form: { select: { name: true, id: true } },
         name: true,
+        address: true,
+        fulfilDate: true,
         customer: { select: { id: true, name: true, email: true } },
       },
     });
@@ -168,6 +175,7 @@ export default class JobsService {
       data: {
         name: data.name,
         form: { connect: { id: data.formId } },
+        ...(data?.address && { address: data.address }),
         ...(data?.fulfil_date && { fulfilDate: data.fulfil_date }),
         ...(data?.customerId && {
           customer: { connect: { id: data.customerId } },
@@ -196,5 +204,64 @@ export default class JobsService {
     });
 
     return result;
+  }
+
+  async updateJobStatus(id: any, data: { status: JobStatus }) {
+    const result = await this.prisma.jobs.update({
+      where: {
+        id: id,
+        deletedAt: null,
+      },
+      data: { status: data.status },
+      select: { status: true },
+    });
+
+    return result;
+  }
+
+  async getJobStatus(id: any) {
+    const result = await this.prisma.jobs.findUnique({
+      where: {
+        id: id,
+        deletedAt: null,
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    return result;
+  }
+
+  async generatePdf(id: string) {
+    const result = await this.prisma.jobs.findUnique({
+      where: { id: id, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        status: true,
+        customer: true,
+        fulfilDate: true,
+        JobFields: {
+          select: {
+            data: true,
+            formField: {
+              select: {
+                mapperName: true,
+              },
+            },
+          },
+        },
+        form: {
+          select: {
+            document: true,
+          },
+        },
+      },
+    });
+
+    const filePath = path.join(__dirname, "../../public/docs/form_html.html");
+    return await generatePdfBuffer(filePath, result);
   }
 }
