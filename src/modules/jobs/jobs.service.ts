@@ -8,7 +8,7 @@ import {
   IJobFormResponse,
 } from "./jobs.interface";
 import { getQueryObject } from "../../utils/helpers/global.helper";
-import { generatePdfBuffer } from "../../utils/helpers/generate-pdf.helper";
+import { generateWordFile } from "../../utils/helpers/generate-pdf.helper";
 import path from "path";
 
 export default class JobsService {
@@ -123,7 +123,10 @@ export default class JobsService {
       where: {
         ...(query.status && { status: query.status }),
         ...(query.search && {
-          name: { contains: query.search, mode: "insensitive" },
+          OR: [
+            { name: { contains: query.search, mode: "insensitive" } },
+            { address: { contains: query.search, mode: "insensitive" } },
+          ],
         }),
       },
       select: {
@@ -249,6 +252,8 @@ export default class JobsService {
             formField: {
               select: {
                 mapperName: true,
+                type: true,
+                values: true,
               },
             },
           },
@@ -261,7 +266,10 @@ export default class JobsService {
       },
     });
 
-    const filePath = path.join(__dirname, "../../public/docs/form_html.html");
-    return await generatePdfBuffer(filePath, result);
+    const filePath = path.join(
+      __dirname,
+      `../../public${result?.form.document.path}`
+    );
+    return await generateWordFile(filePath, result);
   }
 }

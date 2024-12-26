@@ -34,6 +34,8 @@ export interface IFormFieldResponse {
 
 export interface IGetJobs extends IQueryListing {
   status: JobStatus;
+  to: string;
+  from: string;
 }
 
 export interface IJobCreate {
@@ -42,4 +44,5 @@ export interface IJobCreate {
   customerId?: string;
   fulfil_date?: string;
   address?: string;
+  reference?: string;
 }

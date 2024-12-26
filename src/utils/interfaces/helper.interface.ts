@@ -1,9 +1,10 @@
-import { JobStatus } from "@prisma/client";
+import { FormFieldType, JobStatus } from "@prisma/client";
 
 export interface QueryObjectProps {
   page?: string;
   limit?: string;
-  orderBy?: "asc" | "desc";
+  orderBy?: string;
+  direction?: "asc" | "desc";
   search?: string;
 }
 
@@ -17,7 +18,7 @@ export interface ISuccessResponse {
 export interface IQueryListing {
   page: string;
   limit: string;
-  orderBy?: "asc" | "desc";
+  orderBy?: string;
   direction?: "asc" | "desc";
   search?: string;
 }
@@ -26,6 +27,8 @@ export interface ITemplateJobFields {
   data: any;
   formField: {
     mapperName: string;
+    type: FormFieldType;
+    values: any;
   };
 }
 

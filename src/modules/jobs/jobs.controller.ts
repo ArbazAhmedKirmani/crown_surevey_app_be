@@ -120,8 +120,11 @@ class JobsController {
     async (req: Request<{ id: string }>, res: Response) => {
       const pdfBuffer = await this.jobsService.generatePdf(req.params.id);
       res.set({
-        "Content-Type": "application/pdf",
-        "Content-Disposition": 'attachment; filename="document.pdf"',
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": "attachment; filename=updated-file.docx",
+        // "Content-Type": "application/pdf",
+        // "Content-Disposition": 'attachment; filename="document.pdf"',
       });
 
       res.end(pdfBuffer);

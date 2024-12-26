@@ -110,9 +110,10 @@ model FloorPlan {
 model Jobs {
   id         String      @id @default(uuid())
   name       String?
+  address    String?
+  reference  String?
   status     JobStatus   @default(PENDING)
   fulfilDate DateTime?   @db.Timestamptz()
-  address    String?
   formId     Int
   form       Form        @relation(fields: [formId], references: [id])
   createdAt  DateTime    @default(now()) @db.Timestamptz()

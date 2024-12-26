@@ -28,6 +28,7 @@ export default class AuthService {
       algorithm: "HS256",
       expiresIn: AppConfig.JWT.TOKEN_EXPIRY,
     });
+
     return { ...result, token };
   }
 
