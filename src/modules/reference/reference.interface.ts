@@ -1,5 +1,6 @@
 export interface ICreateCategoryResponse {
   name: string;
+  fieldId: string;
 }
 
 export interface IResponseCreate {
@@ -7,4 +8,5 @@ export interface IResponseCreate {
   value: string;
   categoryId: string;
   isSiteNote: boolean;
+  orderNo?: number;
 }

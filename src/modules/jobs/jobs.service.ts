@@ -10,6 +10,7 @@ import {
 import { getQueryObject } from "../../utils/helpers/global.helper";
 import { generateWordFile } from "../../utils/helpers/generate-pdf.helper";
 import path from "path";
+import { IQueryListing } from "../../utils/interfaces/helper.interface";
 
 export default class JobsService {
   prisma: PrismaClient;
@@ -60,6 +61,7 @@ export default class JobsService {
         name: true,
         prefix: true,
         mapperName: true,
+        links: true,
         JobFields: {
           select: {
             id: true,
@@ -90,6 +92,7 @@ export default class JobsService {
         rating: true,
         values: true,
         response: true,
+        links: true,
       },
     });
   }
@@ -271,5 +274,17 @@ export default class JobsService {
       `../../public${result?.form.document.path}`
     );
     return await generateWordFile(filePath, result);
+  }
+
+  async getFieldsLookup(query: IQueryListing) {
+    return this.prisma.formField.findMany({
+      where: {
+        deletedAt: null,
+        ...(query?.search && {
+          name: { contains: query.search, mode: "insensitive" },
+        }),
+      },
+      select: { id: true, name: true },
+    });
   }
 }

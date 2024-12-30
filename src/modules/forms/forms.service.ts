@@ -83,6 +83,7 @@ export default class FormService {
                 values: true,
                 prefix: true,
                 response: true,
+                links: true,
               },
               orderBy: {
                 orderNumber: "asc",
@@ -132,6 +133,7 @@ export default class FormService {
                   values: field.values,
                   response: field.reference,
                   prefix: field.prefix,
+                  links: field.links,
                 })),
               },
             },
@@ -208,6 +210,7 @@ export default class FormService {
                   required: field.required,
                   response: field.reference,
                   values: field.values,
+                  links: field.links,
                 })),
               },
             },
@@ -242,6 +245,7 @@ export default class FormService {
         prefix: field?.prefix,
         response: field?.reference,
         formSectionId: field?.formSectionId,
+        links: field.links,
       })),
     });
 
@@ -260,6 +264,7 @@ export default class FormService {
           ...(update?.placeholder && { placeholder: update.placeholder }),
           ...(update?.values && { values: update.values }),
           ...(update?.attachments && { attachments: update.attachments }),
+          ...(update?.links && { links: update.links }),
         },
       })
     );

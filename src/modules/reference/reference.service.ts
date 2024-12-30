@@ -95,11 +95,7 @@ export default class ReferenceService {
     return await this.prisma.responseCategory.findMany({
       where: {
         deletedAt: null,
-        formFields: {
-          every: {
-            id: id,
-          },
-        },
+        formFieldId: id,
       },
       select: {
         id: true,
@@ -107,7 +103,7 @@ export default class ReferenceService {
       },
       ...(query && getQueryObject(query)),
       orderBy: {
-        createdAt: "desc",
+        name: "asc",
       },
     });
   }
@@ -116,6 +112,7 @@ export default class ReferenceService {
     await this.prisma.responseCategory.create({
       data: {
         name: data.name,
+        formFieldId: data.fieldId,
       },
     });
   }
@@ -127,6 +124,7 @@ export default class ReferenceService {
         value: data.value,
         categoryId: data.categoryId,
         isSiteNote: data.isSiteNote,
+        orderNo: data.orderNo,
       },
     });
   }
@@ -144,11 +142,8 @@ export default class ReferenceService {
   }
 
   async deleteResponse(id: string) {
-    await this.prisma.responses.update({
+    await this.prisma.responses.delete({
       where: { id: id, deletedAt: null },
-      data: {
-        deletedAt: new Date(Date.now()),
-      },
     });
   }
 

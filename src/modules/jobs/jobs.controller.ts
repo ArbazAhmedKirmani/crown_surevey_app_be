@@ -3,6 +3,7 @@ import { catchAsync } from "../../utils/middlewares/app-error.middleware";
 import { IResponse } from "../../utils/middlewares/response-enhancer.middleware";
 import JobsService from "./jobs.service";
 import { IGetJobs } from "./jobs.interface";
+import { IQueryListing } from "../../utils/interfaces/helper.interface";
 
 class JobsController {
   public router: Router;
@@ -30,6 +31,7 @@ class JobsController {
     this.router.post("/", this.createJobs.bind(this));
     this.router.post("/detail/:id", this.createJobDetail.bind(this));
     this.router.put("/:id/status", this.updateJobStatus.bind(this));
+    this.router.get("/fields/lookup", this.getFieldsLookup.bind(this));
   }
 
   private getFormList = catchAsync(async (req: Request, res: IResponse) => {
@@ -128,6 +130,13 @@ class JobsController {
       });
 
       res.end(pdfBuffer);
+    }
+  );
+
+  private getFieldsLookup = catchAsync(
+    async (req: Request<unknown, any, any, IQueryListing>, res: IResponse) => {
+      const fields = await this.jobsService.getFieldsLookup(req.query);
+      res.sendSuccess(fields);
     }
   );
 }
