@@ -38,17 +38,18 @@ model users {
 }
 
 model Form {
-  id           Int            @id @default(autoincrement())
-  name         String //@db.VarChar(40)
-  prefix       String //@db.VarChar(10)
-  desc         String         @db.Text
-  createdAt    DateTime       @default(now()) @db.Timestamptz()
-  updatedAt    DateTime       @updatedAt @db.Timestamptz()
-  deletedAt    DateTime?      @db.Timestamptz()
-  documentId   String
-  document     Attachments    @relation(fields: [documentId], references: [id])
-  FormSections FormSections[]
-  jobs         Jobs[]
+  id                 Int                  @id @default(autoincrement())
+  name               String //@db.VarChar(40)
+  prefix             String //@db.VarChar(10)
+  desc               String               @db.Text
+  createdAt          DateTime             @default(now()) @db.Timestamptz()
+  updatedAt          DateTime             @updatedAt @db.Timestamptz()
+  deletedAt          DateTime?            @db.Timestamptz()
+  documentId         String
+  document           Attachments          @relation(fields: [documentId], references: [id])
+  FormSections       FormSections[]
+  jobs               Jobs[]
+  FormFieldReference FormFieldReference[]
 }
 
 model FormFieldSchema {
@@ -66,6 +67,7 @@ model FormSections {
   prefix      String
   order       Int
   description String?
+  color       String      @default("#bcb495")
   createdAt   DateTime    @default(now()) @db.Timestamptz()
   updatedAt   DateTime    @updatedAt @db.Timestamptz()
   deletedAt   DateTime?   @db.Timestamptz()
@@ -75,26 +77,27 @@ model FormSections {
 }
 
 model FormField {
-  id                String             @id @default(uuid())
-  name              String
-  prefix            String?
-  mapperName        String
-  orderNumber       Int
-  type              FormFieldType
-  required          Boolean            @default(false)
-  rating            Boolean            @default(false)
-  attachments       Boolean            @default(false)
-  response          Boolean            @default(false)
-  placeholder       String?
-  values            Json?              @db.JsonB
-  links             Json?              @db.JsonB
-  createdAt         DateTime           @default(now()) @db.Timestamptz()
-  updatedAt         DateTime           @updatedAt @db.Timestamptz()
-  deletedAt         DateTime?          @db.Timestamptz()
-  formSectionId     String
-  formSection       FormSections       @relation(fields: [formSectionId], references: [id])
-  responsesCategory ResponseCategory[]
-  JobFields         JobFields[]
+  id                 String               @id @default(uuid())
+  name               String
+  prefix             String?
+  mapperName         String
+  orderNumber        Int
+  type               FormFieldType
+  required           Boolean              @default(false)
+  rating             Boolean              @default(false)
+  attachments        Boolean              @default(false)
+  response           Boolean              @default(false)
+  placeholder        String?
+  values             Json?                @db.JsonB
+  links              Json?                @db.JsonB
+  createdAt          DateTime             @default(now()) @db.Timestamptz()
+  updatedAt          DateTime             @updatedAt @db.Timestamptz()
+  deletedAt          DateTime?            @db.Timestamptz()
+  formSectionId      String
+  formSection        FormSections         @relation(fields: [formSectionId], references: [id])
+  responsesCategory  ResponseCategory[]
+  JobFields          JobFields[]
+  FormFieldReference FormFieldReference[]
 }
 
 model FloorPlan {
@@ -184,4 +187,16 @@ model Attachments {
   updatedAt    DateTime  @updatedAt @db.Timestamptz()
   deletedAt    DateTime? @db.Timestamptz()
   Form         Form[]
+}
+
+model FormFieldReference {
+  id         Int        @id() @default(autoincrement())
+  identifier String
+  reference  String
+  formId     Int
+  fieldId    String?
+  form       Form       @relation(fields: [formId], references: [id])
+  field      FormField? @relation(fields: [fieldId], references: [id])
+  createdAt  DateTime   @default(now()) @db.Timestamptz()
+  updatedAt  DateTime   @updatedAt @db.Timestamptz()
 }

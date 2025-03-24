@@ -91,6 +91,30 @@ export default class ReferenceService {
     return result;
   }
 
+  async getCategoriesWithReference(id: string) {
+    const result = await this.prisma.responseCategory.findMany({
+      where: { deletedAt: null, formFieldId: id },
+      select: {
+        id: true,
+        name: true,
+        Responses: {
+          select: {
+            id: true,
+            name: true,
+            value: true,
+          },
+          orderBy: {
+            orderNo: "asc",
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+    return result;
+  }
+
   async getCategoryByFormId(query: IQueryListing, id: string) {
     return await this.prisma.responseCategory.findMany({
       where: {

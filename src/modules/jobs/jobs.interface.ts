@@ -46,3 +46,8 @@ export interface IJobCreate {
   address?: string;
   reference?: string;
 }
+
+export interface ICreateJobResult {
+  formField: { name: string; mapperName: string };
+  job: { form: { id: number; name: string } };
+}

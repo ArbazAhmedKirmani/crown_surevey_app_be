@@ -14,6 +14,7 @@ export interface IFormSectionDto {
   order: number;
   description: string;
   form_field: IFormFieldsCreateDto[];
+  color?: string;
 }
 
 export interface IFormCreateDto {

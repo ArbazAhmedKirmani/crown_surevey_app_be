@@ -119,6 +119,7 @@ export default class FormService {
           prefix: section.prefix,
           description: section.description,
           order: +section.order,
+          color: section.color,
           ...(section.form_field.length && {
             FormField: {
               createMany: {
@@ -197,6 +198,7 @@ export default class FormService {
             prefix: section.prefix,
             formId: id,
             description: section.description,
+            color: section.color,
             FormField: {
               createMany: {
                 data: section.form_field.map((field) => ({
@@ -226,7 +228,8 @@ export default class FormService {
             ...(update?.name && { name: update.name }),
             ...(update?.prefix && { prefix: update.prefix }),
             ...(update?.description && { description: update.description }),
-            ...(update?.order && { order: Number(update.order) }),
+            ...(update?.order && { order: update.order }),
+            ...(update?.color && { color: update.color }),
           },
         })
       ) || [];
