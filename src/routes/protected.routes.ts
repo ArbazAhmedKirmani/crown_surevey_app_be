@@ -7,6 +7,8 @@ import JobsController from "../modules/jobs/jobs.controller";
 import ReferenceController from "../modules/reference/reference.controller";
 import CustomerController from "../modules/customer/customer.controller";
 import userController from "../modules/user/user.controller";
+import ReportsController from "../modules/reports/reports.controller";
+import FormFieldReferenceController from "../modules/formFieldReference/formFieldReference.controller";
 
 const ProtectedRoutes = Router();
 
@@ -20,5 +22,7 @@ ProtectedRoutes.use("/schema", SchemaController);
 ProtectedRoutes.use("/upload", AttachmentController);
 ProtectedRoutes.use("/customer", CustomerController);
 ProtectedRoutes.use("/user", userController);
+ProtectedRoutes.use("/report", ReportsController);
+ProtectedRoutes.use("/form-field", FormFieldReferenceController);
 
 export default ProtectedRoutes;

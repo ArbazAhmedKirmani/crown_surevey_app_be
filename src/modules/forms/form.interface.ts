@@ -14,6 +14,7 @@ export interface IFormSectionDto {
   order: number;
   description: string;
   form_field: IFormFieldsCreateDto[];
+  color?: string;
 }
 
 export interface IFormCreateDto {
@@ -48,6 +49,7 @@ export interface IFormFieldsCreateDto {
   values?: string[];
   prefix: string;
   formSectionId?: string;
+  links?: string[];
 }
 
 export interface IFormFieldsUpdateDto {
@@ -63,4 +65,5 @@ export interface IFormFieldsUpdateDto {
   values?: string[];
   prefix?: string;
   reference: boolean;
+  links?: string[];
 }

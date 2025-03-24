@@ -1,6 +1,7 @@
 import { JobStatus, PrismaClient } from "@prisma/client";
 import * as p_client from "../prisma";
 import {
+  ICreateJobResult,
   IFormFieldResponse,
   IFormListResponse,
   IGetJobs,
@@ -10,6 +11,7 @@ import {
 import { getQueryObject } from "../../utils/helpers/global.helper";
 import { generateWordFile } from "../../utils/helpers/generate-pdf.helper";
 import path from "path";
+import { IQueryListing } from "../../utils/interfaces/helper.interface";
 
 export default class JobsService {
   prisma: PrismaClient;
@@ -60,6 +62,7 @@ export default class JobsService {
         name: true,
         prefix: true,
         mapperName: true,
+        links: true,
         JobFields: {
           select: {
             id: true,
@@ -90,6 +93,12 @@ export default class JobsService {
         rating: true,
         values: true,
         response: true,
+        links: true,
+        FormFieldReference: {
+          select: {
+            identifier: true,
+          },
+        },
       },
     });
   }
@@ -190,8 +199,8 @@ export default class JobsService {
     return result;
   }
 
-  async createJobDetail(id: any, data: any) {
-    const result = await this.prisma.jobFields.upsert({
+  async createJobDetail(id: any, data: any): Promise<ICreateJobResult> {
+    const result: ICreateJobResult = await this.prisma.jobFields.upsert({
       where: {
         formFieldId_jobId: {
           formFieldId: data?.fieldId,
@@ -204,7 +213,17 @@ export default class JobsService {
         formField: { connect: { id: data.fieldId } },
         data: data.data,
       },
+      select: {
+        job: {
+          select: { form: { select: { id: true, name: true } } },
+        },
+        formField: {
+          select: { mapperName: true, name: true },
+        },
+      },
     });
+
+    this.handleFormIdentifiers(id, data, result);
 
     return result;
   }
@@ -271,5 +290,185 @@ export default class JobsService {
       `../../public${result?.form.document.path}`
     );
     return await generateWordFile(filePath, result);
+  }
+
+  async getFieldsLookup(query: IQueryListing) {
+    return this.prisma.formField.findMany({
+      where: {
+        deletedAt: null,
+        ...(query?.search && {
+          name: { contains: query.search, mode: "insensitive" },
+        }),
+      },
+      select: { id: true, name: true },
+    });
+  }
+
+  async getFieldsByForm(formId: number) {
+    return this.prisma.formField.findMany({
+      where: {
+        deletedAt: null,
+        formSection: {
+          formId: formId,
+        },
+      },
+      select: { id: true, name: true },
+    });
+  }
+
+  async jobSectionFieldList(id: string) {
+    const result = await this.prisma.jobs.findUnique({
+      where: { id: id, deletedAt: null },
+      select: {
+        id: true,
+        form: {
+          select: {
+            FormSections: {
+              select: {
+                id: true,
+                name: true,
+                prefix: true,
+                FormField: {
+                  select: {
+                    id: true,
+                    name: true,
+                    prefix: true,
+                    JobFields: {
+                      where: { jobId: id },
+                      select: { id: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return result;
+  }
+
+  async getJobPreview(id: string) {
+    const result = await this.prisma.jobs.findUnique({
+      where: { id: id, deletedAt: null },
+      select: {
+        form: {
+          select: {
+            id: true,
+            name: true,
+            FormSections: {
+              select: {
+                id: true,
+                name: true,
+                prefix: true,
+                order: true,
+                FormField: {
+                  select: {
+                    id: true,
+                    name: true,
+                    mapperName: true,
+                    orderNumber: true,
+                    JobFields: {
+                      where: {
+                        jobId: id,
+                      },
+                      select: {
+                        data: true,
+                      },
+                    },
+                  },
+                  orderBy: {
+                    orderNumber: "asc",
+                  },
+                },
+              },
+              orderBy: {
+                order: "asc",
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return result;
+  }
+
+  private async handleFormIdentifiers(
+    id: any,
+    data: any,
+    result: ICreateJobResult
+  ) {
+    const identifiers = await this.prisma.formFieldReference.findMany({
+      where: {
+        formId: result.job.form.id,
+        NOT: {
+          fieldId: null,
+        },
+      },
+      select: {
+        id: true,
+        identifier: true,
+        reference: true,
+        field: {
+          select: {
+            id: true,
+            mapperName: true,
+          },
+        },
+      },
+    });
+
+    if (identifiers.length) {
+      identifiers.forEach(async (identifier) => {
+        if (data?.data?.[result.formField.mapperName] === "") {
+        }
+        if (
+          data?.data?.[result.formField.mapperName]?.includes(
+            identifier.identifier
+          )
+        ) {
+          const fieldIdentifier: any = await this.prisma.jobFields.findFirst({
+            where: {
+              jobId: id,
+              formFieldId: identifier.field?.id!,
+            },
+            select: {
+              id: true,
+              data: true,
+            },
+          });
+          if (!fieldIdentifier) {
+            await this.prisma.jobFields.create({
+              data: {
+                job: { connect: { id: id } },
+                formField: { connect: { id: identifier.field?.id! } },
+                data: {
+                  [identifier.field?.mapperName!]: [
+                    identifier.reference.concat(" ", result.formField.name),
+                  ],
+                },
+              },
+            });
+          } else {
+            if (
+              !fieldIdentifier?.data?.[identifier.field?.mapperName!].includes(
+                identifier.reference + " " + result.formField.name
+              )
+            ) {
+              const obj: any = fieldIdentifier.data;
+              obj.push(identifier.reference.concat(" ", result.formField.name));
+              await this.prisma.jobFields.update({
+                where: { id: fieldIdentifier.id },
+                data: {
+                  data: obj,
+                },
+              });
+            }
+          }
+        }
+      });
+    }
   }
 }

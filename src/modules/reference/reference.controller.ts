@@ -25,6 +25,11 @@ class ReferenceController {
       "/category/reference/:id",
       this.getAllReferenceCategory.bind(this)
     );
+    this.router.get(
+      "/category-reference/:id",
+      this.getCategoryWithReference.bind(this)
+    );
+    this.router.get("/:id", this.getReferenceById.bind(this));
     this.router.get("/:id", this.getReferenceById.bind(this));
     this.router.get("/:id/category", this.getReferencesByCategory.bind(this));
     this.router.get("/category/:id", this.getReferenceByFormId.bind(this));
@@ -98,6 +103,15 @@ class ReferenceController {
   private getAllReferenceCategory = catchAsync(
     async (req: Request<any, any, any, IQueryListing>, res: IResponse) => {
       const result = await this.referenceService.getCategories();
+      res.sendSuccess(result);
+    }
+  );
+
+  private getCategoryWithReference = catchAsync(
+    async (req: Request<any, any, any, IQueryListing>, res: IResponse) => {
+      const result = await this.referenceService.getCategoriesWithReference(
+        req.params.id!
+      );
       res.sendSuccess(result);
     }
   );

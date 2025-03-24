@@ -83,6 +83,7 @@ export default class FormService {
                 values: true,
                 prefix: true,
                 response: true,
+                links: true,
               },
               orderBy: {
                 orderNumber: "asc",
@@ -118,6 +119,7 @@ export default class FormService {
           prefix: section.prefix,
           description: section.description,
           order: +section.order,
+          color: section.color,
           ...(section.form_field.length && {
             FormField: {
               createMany: {
@@ -132,6 +134,7 @@ export default class FormService {
                   values: field.values,
                   response: field.reference,
                   prefix: field.prefix,
+                  links: field.links,
                 })),
               },
             },
@@ -195,6 +198,7 @@ export default class FormService {
             prefix: section.prefix,
             formId: id,
             description: section.description,
+            color: section.color,
             FormField: {
               createMany: {
                 data: section.form_field.map((field) => ({
@@ -208,6 +212,7 @@ export default class FormService {
                   required: field.required,
                   response: field.reference,
                   values: field.values,
+                  links: field.links,
                 })),
               },
             },
@@ -223,7 +228,8 @@ export default class FormService {
             ...(update?.name && { name: update.name }),
             ...(update?.prefix && { prefix: update.prefix }),
             ...(update?.description && { description: update.description }),
-            ...(update?.order && { order: Number(update.order) }),
+            ...(update?.order && { order: update.order }),
+            ...(update?.color && { color: update.color }),
           },
         })
       ) || [];
@@ -242,6 +248,7 @@ export default class FormService {
         prefix: field?.prefix,
         response: field?.reference,
         formSectionId: field?.formSectionId,
+        links: field.links,
       })),
     });
 
@@ -260,6 +267,7 @@ export default class FormService {
           ...(update?.placeholder && { placeholder: update.placeholder }),
           ...(update?.values && { values: update.values }),
           ...(update?.attachments && { attachments: update.attachments }),
+          ...(update?.links && { links: update.links }),
         },
       })
     );

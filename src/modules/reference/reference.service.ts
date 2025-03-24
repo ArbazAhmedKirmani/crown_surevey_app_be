@@ -91,15 +91,35 @@ export default class ReferenceService {
     return result;
   }
 
+  async getCategoriesWithReference(id: string) {
+    const result = await this.prisma.responseCategory.findMany({
+      where: { deletedAt: null, formFieldId: id },
+      select: {
+        id: true,
+        name: true,
+        Responses: {
+          select: {
+            id: true,
+            name: true,
+            value: true,
+          },
+          orderBy: {
+            orderNo: "asc",
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+    return result;
+  }
+
   async getCategoryByFormId(query: IQueryListing, id: string) {
     return await this.prisma.responseCategory.findMany({
       where: {
         deletedAt: null,
-        formFields: {
-          every: {
-            id: id,
-          },
-        },
+        formFieldId: id,
       },
       select: {
         id: true,
@@ -107,7 +127,7 @@ export default class ReferenceService {
       },
       ...(query && getQueryObject(query)),
       orderBy: {
-        createdAt: "desc",
+        name: "asc",
       },
     });
   }
@@ -116,6 +136,7 @@ export default class ReferenceService {
     await this.prisma.responseCategory.create({
       data: {
         name: data.name,
+        formFieldId: data.fieldId,
       },
     });
   }
@@ -127,6 +148,7 @@ export default class ReferenceService {
         value: data.value,
         categoryId: data.categoryId,
         isSiteNote: data.isSiteNote,
+        orderNo: data.orderNo,
       },
     });
   }
@@ -144,11 +166,8 @@ export default class ReferenceService {
   }
 
   async deleteResponse(id: string) {
-    await this.prisma.responses.update({
+    await this.prisma.responses.delete({
       where: { id: id, deletedAt: null },
-      data: {
-        deletedAt: new Date(Date.now()),
-      },
     });
   }
 
