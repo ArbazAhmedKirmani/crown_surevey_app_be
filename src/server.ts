@@ -22,14 +22,14 @@ import { fileAnalyser } from "./utils/helpers/file-analyser.helper";
 import { generatePdf } from "html-pdf-node-ts";
 
 const app: Application = express();
-const PORT = process.env.APP_PORT || 5000;
+const PORT = parseInt(process.env.APP_PORT!) || 5000;
 
 const corsOptions = {
   origin: "*",
   //http://localhost:5173", // Allow requests only from example.com
   // methods: "GET,POST",            // Allow GET and POST methods
   // allowedHeaders: "Content-Type,Authorization", // Allowed headers
-  // credentials: true, // Allow credentials (cookies, authorization headers)
+  credentials: true, // Allow credentials (cookies, authorization headers)
 };
 
 // Use middleware to parse JSON and URL-encoded bodies
@@ -228,6 +228,6 @@ app.get("/generate-custom-pdf", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
 });
