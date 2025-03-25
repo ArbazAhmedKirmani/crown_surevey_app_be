@@ -29,7 +29,7 @@ const corsOptions = {
   //http://localhost:5173", // Allow requests only from example.com
   // methods: "GET,POST",            // Allow GET and POST methods
   // allowedHeaders: "Content-Type,Authorization", // Allowed headers
-  // credentials: true, // Allow credentials (cookies, authorization headers)
+  credentials: true, // Allow credentials (cookies, authorization headers)
 };
 
 // Use middleware to parse JSON and URL-encoded bodies
