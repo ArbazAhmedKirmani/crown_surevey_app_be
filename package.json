@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"No tests yet\"",
     "start": "ts-node src/server.ts",
-    "serve": "npx prisma generate && npx prisma migrate deploy && node dist/server.js",
+    "serve": "node dist/server.js",
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc"
   },
@@ -51,7 +51,6 @@
     "@types/xml2js": "^0.4.14",
     "nodemon": "^3.0.1",
     "prisma": "^5.3.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.2.2"
   }
 }
