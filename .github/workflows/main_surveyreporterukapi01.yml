@@ -29,10 +29,10 @@ jobs:
           npm run build --if-present
           npm run test --if-present
 
-      - name: Run Prisma commands
-        run: |
-          npx prisma generate
-          npx prisma migrate deploy
+      # - name: Run Prisma commands
+      #   run: |
+      #     npx prisma generate
+      #     npx prisma migrate deploy
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
