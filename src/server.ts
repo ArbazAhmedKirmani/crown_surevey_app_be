@@ -22,7 +22,7 @@ import { fileAnalyser } from "./utils/helpers/file-analyser.helper";
 import { generatePdf } from "html-pdf-node-ts";
 
 const app: Application = express();
-const PORT = parseInt(process.env.APP_PORT!) || 5000;
+const PORT = parseInt(process.env.APP_PORT!) || 8080;
 
 const corsOptions = {
   origin: "*",
