@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+generator db {
+  provider = "ts-node"
+  output   = "prisma/seeder/seed.ts"
+}
+
 enum JobStatus {
   PENDING
   COMPLETED
