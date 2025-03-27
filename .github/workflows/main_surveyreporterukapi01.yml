@@ -26,6 +26,7 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm install
+          npx prisma generate
           npm run build --if-present
           npm run test --if-present
 
@@ -34,7 +35,6 @@ jobs:
 
       - name: Run Prisma commands
         run: |
-          npx prisma generate
           npx prisma migrate deploy
           npx prisma db seed
 
