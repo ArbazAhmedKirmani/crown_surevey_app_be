@@ -3,12 +3,12 @@
     "target": "ES6",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "global.d.ts", "prisma/seeder/seed.ts"],
+  "include": ["src/**/*.ts", "global.d.ts"],
   "exclude": ["node_modules"]
 }

@@ -9,7 +9,7 @@ datasource db {
 
 generator db {
   provider = "prisma-client-js"
-  output   = "prisma/seeder/seed.ts"
+  output   = "src/seeder/seed.ts"
 }
 
 enum JobStatus {
