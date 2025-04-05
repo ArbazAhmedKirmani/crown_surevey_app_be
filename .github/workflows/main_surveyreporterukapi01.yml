@@ -63,11 +63,11 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: Run Prisma commands
-        run: |
-          npx prisma generate
-          npx prisma migrate deploy
-          npx prisma db seed
+      # - name: Run Prisma commands
+      #   run: |
+      #     npx prisma generate
+      #     npx prisma migrate deploy
+      #     npx prisma db seed
 
       - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
