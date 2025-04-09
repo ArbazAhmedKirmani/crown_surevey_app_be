@@ -65,6 +65,9 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
+      - name: npm install
+        run: npm install
+
       - name: Run Prisma commands
         run: |
           npx prisma migrate deploy
