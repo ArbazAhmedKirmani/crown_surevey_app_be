@@ -57,7 +57,7 @@ export default class AttachmentsService {
             name: filename,
             originalName: file.name,
             path: `/uploads/${filename}`,
-            url: `http://localhost:3002/uploads/${filename}`,
+            url: `${process.env.APP_URL}/uploads/${filename}`,
             mimeType: file.mimetype,
             size: file.size,
           },

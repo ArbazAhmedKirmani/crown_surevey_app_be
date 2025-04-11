@@ -66,9 +66,17 @@ jobs:
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CCF81193A97443258CC9B2FAB3916586 }}
 
-      - name: Run migrations via SSH
+      - name: Run migrations and seed via Kudu API
         run: |
-          az webapp ssh \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --name ${{ env.AZURE_WEBAPP_NAME }} \
-            --command "npm install -g prisma && npx prisma migrate deploy"
+          SCM_URL="https://${{ env.AZURE_WEBAPP_NAME }}.scm.azurewebsites.net"
+          CREDENTIALS="${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CCF81193A97443258CC9B2FAB3916586 }}"
+
+          # Install Prisma and run migrations
+          curl -X POST -u "$CREDENTIALS" "$SCM_URL/api/command" \
+            -H "Content-Type: application/json" \
+            -d '{"command": "npm install -g prisma && npx prisma generate --schema=./prisma/schema.prisma && npx prisma migrate deploy", "dir": "site/wwwroot"}'
+
+          # Seed the database
+          curl -X POST -u "$CREDENTIALS" "$SCM_URL/api/command" \
+            -H "Content-Type: application/json" \
+            -d '{"command": "npm run seed", "dir": "site/wwwroot"}'
