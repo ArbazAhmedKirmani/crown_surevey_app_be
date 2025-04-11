@@ -16,7 +16,7 @@ class JobsController {
   }
 
   private registerRoutes() {
-    this.router.get("/:id/generate-pdf", this.generateJobPdf.bind(this));
+    this.router.get("/:id/generate-form", this.generateJobForm.bind(this));
     this.router.get("/forms", this.getFormList.bind(this));
     this.router.get("/section-fields/:id", this.getSectionFieldList.bind(this));
     this.router.get("/forms/:id", this.getSectionsByFormId.bind(this));
@@ -121,9 +121,9 @@ class JobsController {
     res.sendSuccess(result, "Status successfully updated");
   });
 
-  private generateJobPdf = catchAsync(
+  private generateJobForm = catchAsync(
     async (req: Request<{ id: string }>, res: Response) => {
-      const pdfBuffer = await this.jobsService.generatePdf(req.params.id);
+      const pdfBuffer = await this.jobsService.generateJobForm(req.params.id);
       res.set({
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

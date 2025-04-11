@@ -9,9 +9,8 @@ import {
   IJobFormResponse,
 } from "./jobs.interface";
 import { getQueryObject } from "../../utils/helpers/global.helper";
-import { generateWordFile } from "../../utils/helpers/generate-pdf.helper";
-import path from "path";
 import { IQueryListing } from "../../utils/interfaces/helper.interface";
+import DocumentHandler from "../../utils/helpers/document-handler";
 
 export default class JobsService {
   prisma: PrismaClient;
@@ -255,7 +254,7 @@ export default class JobsService {
     return result;
   }
 
-  async generatePdf(id: string) {
+  async generateJobForm(id: string) {
     const result = await this.prisma.jobs.findUnique({
       where: { id: id, deletedAt: null },
       select: {
@@ -265,6 +264,11 @@ export default class JobsService {
         status: true,
         customer: true,
         fulfilDate: true,
+        form: {
+          select: {
+            document: true,
+          },
+        },
         JobFields: {
           select: {
             data: true,
@@ -277,19 +281,14 @@ export default class JobsService {
             },
           },
         },
-        form: {
-          select: {
-            document: true,
-          },
-        },
       },
     });
 
-    const filePath = path.join(
-      __dirname,
-      `../../public${result?.form.document.path}`
+    const documentHandler = new DocumentHandler(
+      result?.JobFields!,
+      result?.form.document.url!
     );
-    return await generateWordFile(filePath, result);
+    return documentHandler.generateDocument();
   }
 
   async getFieldsLookup(query: IQueryListing) {

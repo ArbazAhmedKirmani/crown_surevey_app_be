@@ -68,10 +68,10 @@ jobs:
       - name: npm install
         run: npm install
 
-      - name: Run Prisma commands
-        run: |
-          npx prisma migrate deploy
-          npx prisma db seed
+      # - name: Run Prisma commands
+      #   run: |
+      #     npx prisma migrate deploy
+      #     npx prisma db seed
 
       - name: "Deploy to Azure Web App"
         id: deploy-to-webapp

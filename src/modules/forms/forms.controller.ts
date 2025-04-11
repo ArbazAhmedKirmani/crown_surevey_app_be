@@ -3,6 +3,7 @@ import FormService from "./forms.service";
 import { catchAsync } from "../../utils/middlewares/app-error.middleware";
 import { IResponse } from "../../utils/middlewares/response-enhancer.middleware";
 import { IQueryListing } from "../../utils/interfaces/helper.interface";
+import { IFormCreateDto, IFormUpdateDto } from "./form.interface";
 // import { IFormCreateDto, IFormUpdateDto } from "./form.interface";
 
 const FormController = Router();
@@ -32,23 +33,23 @@ FormController.get(
   })
 );
 
-// FormController.post(
-//   "/",
-//   catchAsync(async (req: Request<IFormCreateDto>, res: IResponse) => {
-//     const data = await formService.createForm(req.body);
-//     res.sendSuccess(data, "Successfully Created");
-//   })
-// );
+FormController.post(
+  "/",
+  catchAsync(async (req: Request<IFormCreateDto>, res: IResponse) => {
+    const data = await formService.createForm(req.body);
+    res.sendSuccess(data, "Successfully Created");
+  })
+);
 
-// FormController.patch(
-//   "/:id",
-//   catchAsync(
-//     async (req: Request<{ id: string }, IFormUpdateDto>, res: IResponse) => {
-//       const data = await formService.updateForm(+req.params.id, req.body);
-//       res.sendSuccess(data, "Successfully Updated");
-//     }
-//   )
-// );
+FormController.patch(
+  "/:id",
+  catchAsync(
+    async (req: Request<{ id: string }, IFormUpdateDto>, res: IResponse) => {
+      const data = await formService.updateForm(+req.params.id, req.body);
+      res.sendSuccess(data, "Successfully Updated");
+    }
+  )
+);
 
 FormController.get(
   "/pdf/:type",
